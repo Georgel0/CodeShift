@@ -1,9 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getHistory } from '../services/firebase';
 import './Sidebar.css';
 
 export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleSidebar, loadFromHistory }) {
   const [historyItems, setHistoryItems] = useState([]);
+  //Closeing the history when clicking outside of it (mobile)
+  const sidebarRef = useRef(null);
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (isOpen && window.innerWidth < 768 && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        toggleSidebar();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [isOpen, toggleSidebar]);
 
   const refreshHistory = async () => {
     const data = await getHistory();
@@ -23,7 +40,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   ];
 
   return (
-    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+    <aside ref={sidebarRef} className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
         <h2>CodeShift</h2>
         <button className="close-btn mobile-only" onClick={toggleSidebar}>×</button>
