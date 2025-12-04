@@ -3,7 +3,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Vercel securely loads environment variables without the VITE_ prefix 
 const API_KEY = process.env.GEMINI_API_KEY;
 
-// Simplified Schema Definition
+// Simplified Schema Definition (embedded in the prompt)
+// This structure is communicated to the model via systemInstruction
 const SIMPLIFIED_SCHEMA = `{
   "analysis": "A concise 4-sentence summary of the conversion, including complexities and design decisions.",
   "conversions": [
@@ -64,17 +65,17 @@ export default async function handler(req, res) {
       contents: [
         { role: "user", parts: [{ text: `Input Code:\n${code}` }] }
       ],
-      // Use 'generationConfig' for configuration object
+      // FIX: Use 'generationConfig' instead of 'config' for the configuration object
       generationConfig: {
         responseMimeType: mimeType, 
-        // We rely on the system instruction for the structure
       } 
     });
     
+    // FIX 1: Safely access the text property using optional chaining
     const rawText = result?.response?.text;
     
     if (!rawText) {
-      // Check for blocked content reason, which often causes missing text
+      // Handle cases where content is blocked or missing (e.g., due to safety filters)
       const finishReason = result?.response?.candidates?.[0]?.finishReason;
       
       let errorMessage = "Gemini returned an empty response. ";
@@ -86,11 +87,18 @@ export default async function handler(req, res) {
       throw new Error(errorMessage);
     }
     
-    const responseText = rawText.trim();
+    // FIX 2: Explicitly cast to String() before calling .trim() to ensure the function exists
+    const responseText = String(rawText).trim();
     
-    // Parse the JSON string into a JavaScript object
-    const finalResultObject = JSON.parse(responseText);
-    
+    let finalResultObject;
+    try {
+        // Parse the JSON string into a JavaScript object
+        finalResultObject = JSON.parse(responseText);
+    } catch(parseError) {
+        // Handle case where the AI returns non-JSON text (common failure for structured output)
+        throw new Error(`Failed to parse JSON response from AI. Response start: ${responseText.substring(0, 150)}...`);
+    }
+
     res.status(200).json(finalResultObject);
     
   } catch (error) {
