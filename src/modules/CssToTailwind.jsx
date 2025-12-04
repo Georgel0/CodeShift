@@ -58,9 +58,7 @@ export default function CssToTailwind({ onLoadData }) {
           <textarea 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="
-          .card { padding: 20px; background: #fff; }
-          footer > a { color: var(--link-color); }"
+            placeholder=".card { padding: 20px; background: #fff; }"
           />
           <button 
             className="action-btn" 
