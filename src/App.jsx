@@ -16,7 +16,6 @@ function App() {
     // Determine which module to switch to based on history type
     if (historyItem.type === 'css-tailwind') {
       setActiveModule('css-tailwind');
-      // In a real app, we would pass this data into the module via props or Context
       console.log("Loaded from history:", historyItem);
       setLoadedData(historyItem); // Store this to pass to the module later
       alert("Loaded history item. (Integration logic to populate fields would go here)");
@@ -27,7 +26,6 @@ function App() {
   const renderModule = () => {
     switch (activeModule) {
       case 'css-tailwind':
-        // Pass loadedData if you want to implement history restoration later
         return <CssToTailwind onLoadData={loadedData} />;
       case 'ts-js':
         return <PlaceholderModule title="TypeScript to JavaScript" icon="📘" />;

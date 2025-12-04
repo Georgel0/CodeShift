@@ -25,7 +25,6 @@ export const saveHistory = async (type, input, output) => {
   try {
     await addDoc(collection(db, "users", auth.currentUser.uid, "history"), {
       type,
-      // FIX: Save the full input so it can be restored correctly
       input: input, 
       fullOutput: output, 
       createdAt: new Date()
