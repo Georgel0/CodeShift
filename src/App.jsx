@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import CssToTailwind from './modules/CssToTailwind';
 import PlaceholderModule from './modules/PlaceholderModules';
+import Notification from './components/Notification';
 import './index.css';
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // State to hold data if we are loading from history
   const [loadedData, setLoadedData] = useState(null);
+  const [notificationMessage, setNotificationMessage] = useState(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -18,7 +20,7 @@ function App() {
       setActiveModule('css-tailwind');
       console.log("Loaded from history:", historyItem);
       setLoadedData(historyItem); // Store this to pass to the module later
-      alert("Loaded history item. (Integration logic to populate fields would go here)");
+      setNotificationMessage(`History loaded: ${historyItem.type} conversion.`);
     }
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
@@ -61,17 +63,9 @@ function App() {
           
            <span>CodeShift</span>
         </div>
-        
-        {/* Small inline style for mobile hamburger visibility logic */}
-        <style>{`
-          @media (max-width: 768px) {
-            .mobile-header { display: flex !important; align-items: center; background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border); }
-          }
-        `}</style>
-
         {renderModule()}
       </main>
+       <Notification message={notificationMessage} /> 
     </div>
   );
 }
