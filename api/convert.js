@@ -20,9 +20,19 @@ export default async function handler(req, res) {
   const genAI = new GoogleGenerativeAI(API_KEY);
   
   const modelName = "gemini-2.5-flash"; 
+  let systemInstruction = "";
   
   // Define the target JSON structure as a constant string for clarity in the prompt
-  const TARGET_JSON_STRUCTURE = ``;
+  const TARGET_JSON_STRUCTURE = `{
+    "analysis": "A brief summary of the overall conversion, highlighting key challenges or decisions.",
+    "conversions": [
+      {
+        "selector": ".card",
+        "tailwindClasses": "bg-white p-4 shadow-lg",
+        "explanation": "A concise explanation of the classes used."
+      }
+    ]
+  }`;
 
   if (type === 'css-to-tailwind') {
     // CRITICAL CHANGE: Clear, direct instruction to return ONLY the raw JSON object, no markdown.
@@ -32,15 +42,7 @@ export default async function handler(req, res) {
       
       You must strictly adhere to the following simple structure:
       
-     {
-    "analysis": "A brief summary of the overall conversion, highlighting key challenges or decisions.",
-    "conversions": [
-      {
-        "selector": ".card",
-        "tailwindClasses": "bg-white p-4 shadow-lg",
-      }
-    ]
-  }
+      ${TARGET_JSON_STRUCTURE}
       
       - The 'analysis' field is the overall summary of the conversion.
       - Each object in the 'conversions' array must correspond to one CSS selector/block.
