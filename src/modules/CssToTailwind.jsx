@@ -8,11 +8,10 @@ export default function CssToTailwind({ onLoadData }) {
   const [data, setData] = useState(null); // Holds { analysis: string, conversions: [] }
   const [loading, setLoading] = useState(false);
 
-  // --- FIX 1: Listen for history data from the parent component ---
   useEffect(() => {
     if (onLoadData) {
       // If history data is present, populate the state immediately
-      // Note: We prioritize the full input if available, otherwise fallback to truncated
+      // Note: Prioritize the full input if available, otherwise fallback to truncated
       setInput(onLoadData.input || ''); 
       setData(onLoadData.fullOutput || null);
     }
@@ -24,11 +23,11 @@ export default function CssToTailwind({ onLoadData }) {
     setData(null);
 
     try {
-      // 1. Call the API
-      // Your convert.js ensures this returns a parsed Object, not a string.
+      // Call the API
+      // convert.js ensures this returns a parsed Object, not a string.
       const result = await convertCode('css-to-tailwind', input);
 
-      // 2. Validate structure
+      // Validate structure
       if (result && result.conversions) {
           setData(result);
           // Save the history using the full object
@@ -59,20 +58,22 @@ export default function CssToTailwind({ onLoadData }) {
           <textarea 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder=".card { padding: 20px; background: #fff; } \n\n.footer > a { color: var(--link-color); }"
+            placeholder="
+          .card { padding: 20px; background: #fff; }
+          footer > a { color: var(--link-color); }"
           />
           <button 
             className="action-btn" 
             onClick={handleConvert} 
             disabled={loading}
           >
-            {loading ? 'Converting...' : 'Convert with Gemini'}
+            {loading ? 'Converting...' : 'Convert'}
           </button>
         </div>
 
         {/* Output Column */}
         <div className="panel output-panel">
-          <h3>Output & AI Analysis</h3>
+          <h3>Output & Analysis</h3>
           {data ? (
             <div className="results-container">
               
