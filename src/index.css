@@ -58,7 +58,7 @@ button {
 }
 
 .mobile-header { 
-  display: none !important;
+  display: flex !important;
   align-items: center; 
   justify-content: space-between;
   background: var(--bg-secondary);
@@ -67,6 +67,22 @@ button {
   z-index: 50;
   position: sticky;
   top: 0;
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    margin-left: auto; 
+}
+
+.logo-image {
+    height: 1.5rem; 
+    width: auto;
+    margin-right: 0.5rem; 
+}
+
+.logo-group span {
+    font-size: 1.25rem; 
 }
 
 .mobile-header span {

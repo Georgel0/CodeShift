@@ -54,15 +54,15 @@ function App() {
       
       <main className="main-content">
         {/* Mobile Header to open Sidebar */}
-        <div className="mobile-header" style={{ display: 'none' }}> 
-           {/* Controlled via CSS media queries in index.css usually, 
-               but inline style here for quick toggle logic */}
+        <div className="mobile-header"> 
            <button onClick={toggleSidebar} style={{ padding: '1rem', background: 'transparent', color: '#fff', fontSize: '1.5rem' }}>
              ☰
            </button>
-          
+        <div className="logo-group">
+           <img src="/logo.png" alt="CodeShift Logo" className="logo-image" />
            <span>CodeShift</span>
         </div>
+      </div>
         {renderModule()}
       </main>
        <Notification message={notificationMessage} /> 
