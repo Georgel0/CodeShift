@@ -12,9 +12,9 @@ const cssToTailwindSchema = {
       "type": "STRING",
       "description": "A concise 4-sentence paragraph describing the conversion process, complexities handled, and any limitations or approximations."
     },
+    
     "conversions": {
       "type": "ARRAY",
-      "description": "An array of converted CSS selectors and their Tailwind equivalents.",
       "items": {
         "type": "OBJECT",
         "properties": {
