@@ -1,27 +1,40 @@
-// api/convert.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
-// Check if API_KEY is present before initializing
-let genAI;
-if (API_KEY) {
-  genAI = new GoogleGenerativeAI(API_KEY);
-}
-
-// Schema Definition
-const SIMPLIFIED_SCHEMA = `{
-  "analysis": "A concise 4-sentence summary of the conversion, including complexities and design decisions.",
-  "conversions": [
-    {
-      "selector": ".card",
-      "tailwindClasses": "bg-white p-4 shadow-lg",
-      "explanation": "Added background, padding, and box shadow."
+// Define the required structure using a JSON Schema
+const cssToTailwindSchema = {
+  type: "OBJECT",
+  properties: {
+    "analysis": {
+      "type": "STRING",
+      "description": "A concise 4-sentence paragraph describing the conversion process, complexities handled, and any limitations or approximations."
     },
-    // ... more conversion objects
-  ]
-}`;
-
+    "conversions": {
+      "type": "ARRAY",
+      "description": "An array of converted CSS selectors and their Tailwind equivalents.",
+      "items": {
+        "type": "OBJECT",
+        "properties": {
+          "selector": {
+            "type": "STRING",
+            "description": "The original CSS selector (e.g., .card, .btn:hover)."
+          },
+          "tailwindClasses": {
+            "type": "STRING",
+            "description": "The complete string of equivalent Tailwind classes, using arbitrary values for non-standard properties."
+          },
+          "explanation": {
+            "type": "STRING",
+            "description": "A brief sentence explaining the primary Tailwind classes chosen for this selector."
+          }
+        },
+        "required": ["selector", "tailwindClasses", "explanation"]
+      }
+    }
+  },
+  "required": ["analysis", "conversions"]
+};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -30,64 +43,74 @@ export default async function handler(req, res) {
   
   const { type, code } = req.body;
   
-  if (!API_KEY || !genAI) {
+  if (!API_KEY) {
     return res.status(500).json({ error: 'Server key not configured. Check Vercel environment variables.' });
   }
-
-  // Use a capable model for complex conversions
-  const modelName = "gemini-2.5-flash"; // Assuming this is the model you switched to
-
+  
+  // Initialize genAI here, inside the handler, to ensure it uses the key
+  const genAI = new GoogleGenerativeAI(API_KEY);
+  
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  
   let systemInstruction = "";
-  let mimeType = "text/plain"; 
+  let responseSchema = {};
   
   if (type === 'css-to-tailwind') {
     systemInstruction = `
       You are an expert CSS to Tailwind converter. 
-      Your entire output must be a single, valid JSON object, and nothing else.
-      You must strictly follow this simplified schema: ${SIMPLIFIED_SCHEMA}
-      
-      - The output must be valid JSON, without any surrounding markdown (e.g., \`\`\`json).
-      - The 'analysis' field must be a brief summary of the overall conversion.
-      - The 'conversions' array must contain an object for every CSS selector/block you convert.
+      Your only output must be a valid, clean JSON object that strictly adheres to the provided schema.
+      Analyze the provided CSS, including complex selectors, var(), calc(), and modern color functions, and provide the analysis and conversions.
+      If a CSS value cannot be directly mapped, use Tailwind's arbitrary value syntax (e.g., [width:calc(100%-1rem)]).
     `;
-    mimeType = "application/json";
+    responseSchema = cssToTailwindSchema;
+    
   } else {
-    // For any other types, just convert as plain text
     systemInstruction = `Convert the following code based on the request: ${type}. Return plain text.`;
-    mimeType = "text/plain";
   }
   
   try {
-    const model = genAI.getGenerativeModel({ 
-        model: modelName,
-        systemInstruction: systemInstruction 
-    });
-
     const result = await model.generateContent({
       contents: [
         { role: "user", parts: [{ text: `Input Code:\n${code}` }] }
       ],
-      generationConfig: {
-        responseMimeType: mimeType, 
-      } 
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: responseSchema
+      }
     });
     
-    const responseText = result.response.text.trim();
+    const rawText = result?.response?.text;
     
-    if (!responseText) {
-      throw new Error("Gemini returned an empty response text.");
+    if (!rawText) {
+      // Check for blocked content reason
+      const finishReason = result?.response?.candidates?.[0]?.finishReason;
+      
+      let errorMessage = "Gemini returned an empty response. ";
+      if (finishReason) {
+          errorMessage += `Content was blocked with reason: ${finishReason}.`;
+      } else {
+          errorMessage += "The model failed to generate content or returned an unexpected structure.";
+      }
+      throw new Error(errorMessage);
     }
+    
+    const responseText = rawText.trim();
     
     // Parse the JSON string into a JavaScript object
     const finalResultObject = JSON.parse(responseText);
     
+    // Send the parsed OBJECT directly
     res.status(200).json(finalResultObject);
     
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Gemini API Error in Serverless Function:", error);
+    
+    // Send a JSON error response in the event of failure
     res.status(500).json({
-      error: 'Gemini conversion failed due to an internal API error.',
-      details: error.message
+      error: 'Conversion failed. API Request failed with status 500.',
+      // Pass the specific error detail to the client for better debugging
+      details: error.message 
     });
   }
 }
