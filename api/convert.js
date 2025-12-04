@@ -1,10 +1,10 @@
+// --- File: api/convert.js (FINAL, STABLE VERSION) ---
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Vercel securely loads environment variables without the VITE_ prefix 
 const API_KEY = process.env.GEMINI_API_KEY;
 
 // Simplified Schema Definition (embedded in the prompt)
-// This structure is communicated to the model via systemInstruction
 const SIMPLIFIED_SCHEMA = `{
   "analysis": "A concise 4-sentence summary of the conversion, including complexities and design decisions.",
   "conversions": [
@@ -24,17 +24,13 @@ export default async function handler(req, res) {
   
   const { type, code } = req.body;
   
-  // Initialize genAI and check for API key *before* using it
+  // 1. Initialize genAI and check for API key
   if (!API_KEY) {
     return res.status(500).json({ error: 'Server key not configured. Check Vercel environment variables.' });
   }
-  
-  // Initialize genAI inside the handler to ensure proper environment access
   const genAI = new GoogleGenerativeAI(API_KEY);
   
-  // Use a capable model for complex conversions
   const modelName = "gemini-2.5-flash"; 
-
   let systemInstruction = "";
   let mimeType = "text/plain"; 
   
@@ -50,12 +46,12 @@ export default async function handler(req, res) {
     `;
     mimeType = "application/json";
   } else {
-    // For any other types, just convert as plain text
     systemInstruction = `Convert the following code based on the request: ${type}. Return plain text.`;
     mimeType = "text/plain";
   }
   
   try {
+    // 2. Initialize model with system instruction (cleaner practice)
     const model = genAI.getGenerativeModel({ 
         model: modelName,
         systemInstruction: systemInstruction 
@@ -65,19 +61,18 @@ export default async function handler(req, res) {
       contents: [
         { role: "user", parts: [{ text: `Input Code:\n${code}` }] }
       ],
-      // FIX: Use 'generationConfig' instead of 'config' for the configuration object
+      // 3. CRITICAL: Pass *only* the mimeType in generationConfig. 
+      // The system instruction is already in the model object.
       generationConfig: {
         responseMimeType: mimeType, 
       } 
     });
     
-    // FIX 1: Safely access the text property using optional chaining
+    // FIX 1: Safely access the text property
     const rawText = result?.response?.text;
     
     if (!rawText) {
-      // Handle cases where content is blocked or missing (e.g., due to safety filters)
       const finishReason = result?.response?.candidates?.[0]?.finishReason;
-      
       let errorMessage = "Gemini returned an empty response. ";
       if (finishReason) {
           errorMessage += `Content was blocked with reason: ${finishReason}.`;
@@ -87,16 +82,16 @@ export default async function handler(req, res) {
       throw new Error(errorMessage);
     }
     
-    // FIX 2: Explicitly cast to String() before calling .trim() to ensure the function exists
+    // FIX 2: Explicitly cast to String() before calling .trim()
     const responseText = String(rawText).trim();
     
     let finalResultObject;
     try {
-        // Parse the JSON string into a JavaScript object
+        // FIX 3: Safety check on JSON parsing
         finalResultObject = JSON.parse(responseText);
     } catch(parseError) {
-        // Handle case where the AI returns non-JSON text (common failure for structured output)
-        throw new Error(`Failed to parse JSON response from AI. Response start: ${responseText.substring(0, 150)}...`);
+        // This catch block handles the error you just received.
+        throw new Error(`Failed to parse JSON response from AI. The AI responded with: ${responseText.substring(0, 150)}...`);
     }
 
     res.status(200).json(finalResultObject);
