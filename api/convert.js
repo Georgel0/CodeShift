@@ -1,18 +1,19 @@
-// --- File: api/convert.js (FINAL, STABLE VERSION) ---
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Vercel securely loads environment variables without the VITE_ prefix 
 const API_KEY = process.env.GEMINI_API_KEY;
 
-// Simplified Schema Definition (embedded in the prompt)
+// NEW SIMPLIFIED SCHEMA (Embedded in the prompt)
+// The analysis is now a top-level field as expected by your component's display logic.
 const SIMPLIFIED_SCHEMA = `{
-  "analysis": "A concise 4-sentence summary of the conversion, including complexities and design decisions.",
+  "analysis": "A brief summary of the overall conversion, highlighting key challenges or decisions.",
   "conversions": [
     {
       "selector": ".card",
       "tailwindClasses": "bg-white p-4 shadow-lg",
-      "explanation": "Added background, padding, and box shadow."
-    }
+      "explanation": "A concise explanation of the Tailwind classes used for this selector."
+    },
+    // ... more conversion objects
   ]
 }`;
 
@@ -32,26 +33,26 @@ export default async function handler(req, res) {
   
   const modelName = "gemini-2.5-flash"; 
   let systemInstruction = "";
-  let mimeType = "text/plain"; 
   
   if (type === 'css-to-tailwind') {
+    // CRITICAL CHANGE: Instruction to force JSON output enclosed in a markdown block
     systemInstruction = `
       You are an expert CSS to Tailwind converter. 
-      Your entire output must be a single, valid JSON object, and nothing else.
-      You must strictly follow this simplified schema: ${SIMPLIFIED_SCHEMA}
+      Your entire output must be a single JSON object wrapped in a markdown code block, starting and ending with \`\`\`json.
       
-      - The output must be valid JSON, without any surrounding markdown (e.g., \`\`\`json).
-      - The 'analysis' field must be a brief summary of the overall conversion.
-      - The 'conversions' array must contain an object for every CSS selector/block you convert.
+      You must strictly follow this simplified schema structure: ${SIMPLIFIED_SCHEMA}
+      
+      - The 'analysis' field is the overall summary.
+      - Each item in 'conversions' must contain the original 'selector', the 'tailwindClasses', and a per-selector 'explanation'.
+      - DO NOT include any text, notes, or explanations outside of the \`\`\`json block.
     `;
-    mimeType = "application/json";
+    
   } else {
+    // For any other types, just convert as plain text
     systemInstruction = `Convert the following code based on the request: ${type}. Return plain text.`;
-    mimeType = "text/plain";
   }
   
   try {
-    // 2. Initialize model with system instruction (cleaner practice)
     const model = genAI.getGenerativeModel({ 
         model: modelName,
         systemInstruction: systemInstruction 
@@ -59,16 +60,13 @@ export default async function handler(req, res) {
 
     const result = await model.generateContent({
       contents: [
-        { role: "user", parts: [{ text: `Input Code:\n${code}` }] }
+        { role: "user", parts: [{ text: `Input CSS Code to convert:\n${code}` }] }
       ],
-      // 3. CRITICAL: Pass *only* the mimeType in generationConfig. 
-      // The system instruction is already in the model object.
       generationConfig: {
-        responseMimeType: mimeType, 
       } 
     });
     
-    // FIX 1: Safely access the text property
+    // Safely access the text property
     const rawText = result?.response?.text;
     
     if (!rawText) {
@@ -82,16 +80,26 @@ export default async function handler(req, res) {
       throw new Error(errorMessage);
     }
     
-    // FIX 2: Explicitly cast to String() before calling .trim()
+    //cast to String() before calling .trim()
     const responseText = String(rawText).trim();
+    
+    //Extract JSON from the markdown block using a RegExp
+    const jsonMatch = responseText.match(/```json\n?([\s\S]*?)\n?```/);
+    
+    let jsonString;
+    if (jsonMatch && jsonMatch[1]) {
+      jsonString = jsonMatch[1].trim();
+    } else {
+      // Fallback: If no markdown block is found, assume the raw text *is* the JSON
+      jsonString = responseText;
+    }
     
     let finalResultObject;
     try {
-        // FIX 3: Safety check on JSON parsing
-        finalResultObject = JSON.parse(responseText);
+        //check on JSON parsing
+        finalResultObject = JSON.parse(jsonString);
     } catch(parseError) {
-        // This catch block handles the error you just received.
-        throw new Error(`Failed to parse JSON response from AI. The AI responded with: ${responseText.substring(0, 150)}...`);
+        throw new Error(`Failed to parse JSON response from AI. The AI responded with non-JSON data starting with: ${responseText.substring(0, 150)}...`);
     }
 
     res.status(200).json(finalResultObject);
