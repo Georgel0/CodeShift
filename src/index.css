@@ -153,6 +153,8 @@ button {
   --text-on-accent: #ffffff;
   --shadow-subtle: 0 4px 12px rgba(66, 153, 225, 0.1);
   --gradient-gold: none;
+  --btn-background: var(--accent);
+  --btn-background-hover: var(--accent-hover);
 }
 
 .theme-light-quartz {
@@ -179,12 +181,14 @@ button {
   --bg-tertiary: #ddf5f0;
   --text-primary: #1a4b41;
   --text-secondary: #4a7c76;
-  --accent: #20b2aa;
+  --accent: #20b2aa;      
   --accent-hover: #008b8b;
   --border: #cdeae6;
   --text-on-accent: #ffffff;
   --shadow-subtle: 0 4px 12px rgba(32, 178, 170, 0.15);
   --gradient-gold: none;
+  --btn-background: var(--accent);
+  --btn-background-hover: var(--accent-hover);
 }
 
 .theme-dark-black-gold .primary-button:hover, 
