@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import CssToTailwind from './modules/CssToTailwind';
 import PlaceholderModule from './modules/PlaceholderModules';
@@ -13,6 +13,11 @@ function App() {
   const [loadedData, setLoadedData] = useState(null);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const { currentTheme } = useTheme();
+  
+  useEffect(() => {
+    document.body.className = '';
+    document.body.classList.add(`theme-${currentTheme}`);
+  }, [currentTheme]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -45,7 +50,7 @@ function App() {
   };
 
   return (
-    <div className={`container theme-${currentTheme}`}>
+    <div className='container'>
       <Sidebar 
         activeModule={activeModule} 
         setActiveModule={setActiveModule}
@@ -68,7 +73,7 @@ function App() {
         {renderModule()}
       </main>
        <Notification message={notificationMessage} /> 
-    </div>
+     </div>
   );
 }
 

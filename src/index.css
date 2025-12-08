@@ -131,11 +131,6 @@ button {
   --header-color: var(--gradient-gold);
 }
 
-.theme-dark-black-gold body {
-  background-color: var(--bg-primary); 
-  color: var(--text-primary);
-}
-
 
 .theme-dark-deep-sea {
   --bg-primary: #0a0e2a;
@@ -149,11 +144,6 @@ button {
   --text-on-accent: #ffffff;
   --shadow-subtle: 0 4px 12px rgba(126, 87, 194, 0.3);
   --gradient-gold: none;
-}
-
-.theme-dark-deep-sea body {
-  background-color: var(--bg-primary); 
-  color: var(--text-primary);
 }
 
 
@@ -173,15 +163,10 @@ button {
   --btn-background-hover: var(--accent-hover);
 }
 
-.theme-light-default body {
-  background-color: var(--bg-primary); 
-  color: var(--text-primary);
-}
-
 .theme-light-quartz {
   --bg-primary: #fdfdfd;
   --bg-secondary: #f8f6f2;
-  --bg-tertiary: #F0F0F0;
+  --bg-tertiary: #f0ebe1; /* Cleaned up this tertiary background */
   --text-primary: #333333;
   --text-secondary: #8b7355;
   --accent: #b8860b;
@@ -194,11 +179,6 @@ button {
   --btn-background: var(--gradient-gold);
   --btn-background-hover: var(--gradient-gold);
   --header-color: var(--gradient-gold);
-}
-
-.theme-light-quartz body {
-  background-color: var(--bg-primary); 
-  color: var(--text-primary);
 }
 
 .theme-light-mint-teal {
@@ -215,11 +195,6 @@ button {
   --gradient-gold: none;
   --btn-background: var(--accent); 
   --btn-background-hover: var(--accent-hover);
-}
-
-.theme-light-mint-teal body {
-  background-color: var(--bg-primary); 
-  color: var(--text-primary);
 }
 
 
