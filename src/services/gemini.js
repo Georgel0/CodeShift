@@ -1,5 +1,3 @@
-//services/gemini.js
-
 export const convertCode = async (type, code) => {
     const response = await fetch('/api/convert', {
         method: 'POST',
