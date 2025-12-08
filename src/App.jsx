@@ -37,13 +37,13 @@ function App() {
       case 'css-tailwind':
         return <CssToTailwind onLoadData={loadedData} />;
       case 'ts-js':
-        return <PlaceholderModule title="TypeScript to JavaScript" icon="📘" />;
+        return <PlaceholderModule title="TypeScript to JavaScript" icon="fas fa-code" />;
       case 'regex':
-        return <PlaceholderModule title="Regex Generator" icon="🧩" />;
+        return <PlaceholderModule title="Regex Generator" icon="fas fa-search" />;
       case 'sql':
-        return <PlaceholderModule title="SQL Builder" icon="🗄️" />;
+        return <PlaceholderModule title="SQL Builder" icon="fas fa-database" />;
       case 'json':
-        return <PlaceholderModule title="JSON Formatter" icon="📋" />;
+        return <PlaceholderModule title="JSON Formatter" icon="fas fa-list-alt" />;
       default:
         return <CssToTailwind />;
     }
@@ -60,7 +60,6 @@ function App() {
       />
       
       <main className="main-content">
-        {/* Mobile Header to open Sidebar */}
         <div className="mobile-header"> 
            <button onClick={toggleSidebar} style={{ padding: '1rem', background: 'transparent', color: 'var(--text-primary)', fontSize: '1.5rem' }}>
              ☰
@@ -70,7 +69,8 @@ function App() {
            <span>CodeShift</span>
         </div>
       </div>
-        {renderModule()}
+      
+      {renderModule()}
       </main>
        <Notification message={notificationMessage} /> 
      </div>
