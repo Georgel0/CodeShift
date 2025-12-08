@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { getHistory } from '../services/firebase';
 import './Sidebar.css';
+import { useTheme } from './ThemeContext';
 
 export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleSidebar, loadFromHistory }) {
   const [historyItems, setHistoryItems] = useState([]);
+  const { currentTheme, changeTheme, groupedThemes } = useTheme();
   //Closeing the history when clicking outside of it (mobile)
   const sidebarRef = useRef(null);
   useEffect(() => {
@@ -58,6 +60,21 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
           </button>
         ))}
       </nav>
+      
+      <div className="theme-selector-section">
+        <h3>Theme:</h3>
+        <select value={currentTheme} onChange={(e) => changeTheme(e.target.value)} className="theme-select-dropdown">
+          {Object.entries(groupedThemes).map(([group, themes]) => (
+            <optgroup key={group} label={group}>
+              {themes.map((theme) => (
+                <option key={theme.id} value={theme.id}>
+                  {theme.label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
 
       <div className="history-section">
         <div className="history-header">

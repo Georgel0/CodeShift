@@ -136,6 +136,42 @@
   display: none;
 }
 
+.theme-selector-section {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.theme-selector-section h3 
+
+.theme-select-dropdown {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-select-dropdown:hover {
+  border-color: var(--accent);
+}
+
+.theme-select-dropdown optgroup {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.theme-select-dropdown option {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: absolute;

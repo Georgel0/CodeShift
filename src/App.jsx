@@ -4,6 +4,7 @@ import CssToTailwind from './modules/CssToTailwind';
 import PlaceholderModule from './modules/PlaceholderModules';
 import Notification from './components/Notification';
 import './index.css';
+import { useTheme } from './components/ThemeContext';
 
 function App() {
   const [activeModule, setActiveModule] = useState('css-tailwind');
@@ -11,6 +12,7 @@ function App() {
   // State to hold data if we are loading from history
   const [loadedData, setLoadedData] = useState(null);
   const [notificationMessage, setNotificationMessage] = useState(null);
+  const { currentTheme } = useTheme();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -43,7 +45,7 @@ function App() {
   };
 
   return (
-    <div className="container">
+    <div className={`container theme-${currentTheme}`}>
       <Sidebar 
         activeModule={activeModule} 
         setActiveModule={setActiveModule}
