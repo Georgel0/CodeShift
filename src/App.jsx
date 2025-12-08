@@ -57,7 +57,7 @@ function App() {
       <main className="main-content">
         {/* Mobile Header to open Sidebar */}
         <div className="mobile-header"> 
-           <button onClick={toggleSidebar} style={{ padding: '1rem', background: 'transparent', color: '#fff', fontSize: '1.5rem' }}>
+           <button onClick={toggleSidebar} style={{ padding: '1rem', background: 'transparent', color: 'var(--text-primary)', fontSize: '1.5rem' }}>
              ☰
            </button>
         <div className="logo-group">

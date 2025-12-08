@@ -32,7 +32,6 @@
   background: var(--header-color);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
   font-size: 1.5rem;
   letter-spacing: 0.5px;
 }
@@ -112,17 +111,14 @@
 }
 
 .refresh-btn {
-  background: var(--bg-tertiary);
   color: var(--text-secondary);
   font-size: 0.9rem;
   padding: 0.3rem 0.5rem;
-  border-radius: var(--radius);
 }
 
 .refresh-btn:hover {
-  background: var(--accent);
   color: var(--bg-primary);
-  transform: rotate(15deg);
+  transform: rotate(360deg);
 }
 
 .theme-dark-black-gold .refresh-btn:hover,
@@ -190,7 +186,6 @@
 .theme-selector-section {
   padding: 1rem;
   border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
   margin-bottom: 1rem;
 }
 

@@ -97,7 +97,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 1.1rem;
   text-align: center;
 }
