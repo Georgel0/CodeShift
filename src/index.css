@@ -45,10 +45,10 @@ button {
 }
 
 .primary-button {
+  margin-top: 10px;
   padding: 0.75rem 1.5rem;
   border-radius: var(--radius);
   font-weight: 600;
-  
   background: var(--btn-background);
   color: var(--btn-text);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -122,6 +122,7 @@ button {
   
   --gradient-gold: linear-gradient(160deg, #FFEC8B 5%, #D4AF37 30%, #B8860B 50%, #D4AF37 70%, #FFEC8B 95%);
   --btn-background: var(--gradient-gold);
+  --btn-background-hover: var(--gradient-gold);
   --header-color: var(--gradient-gold);
 }
 
@@ -168,6 +169,7 @@ button {
   
   --gradient-gold: linear-gradient(160deg, #FFFACD 5%, #F0E68C 30%, #B8860B 50%, #F0E68C 70%, #FFFACD 95%);
   --btn-background: var(--gradient-gold);
+  --btn-background-hover: var(--gradient-gold);
   --header-color: var(--gradient-gold);
 }
 
