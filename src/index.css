@@ -10,6 +10,12 @@
   --radius: 6px; 
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   --shadow-subtle: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --text-on-accent: #FFFFFF;
+  --gradient-gold: none;
+  --btn-background: var(--accent);
+  --btn-background-hover: var(--accent-hover);
+  --btn-text: var(--text-on-accent);
+  --header-color: var(--accent);
 }
 
 body {
@@ -36,6 +42,22 @@ button {
   border: none;
   font-family: inherit;
   transition: all 0.15s ease-out;
+}
+
+.primary-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  
+  background: var(--btn-background);
+  color: var(--btn-text);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.primary-button:hover {
+  background: var(--btn-background-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
 }
 
 .container {
@@ -72,53 +94,20 @@ button {
 .logo-group {
     display: flex;
     align-items: center;
-    margin-left: auto; 
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1.2rem;
 }
 
 .logo-image {
-    height: 1.5rem; 
-    width: auto;
-    margin-right: 0.5rem; 
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
 }
 
-.logo-group span {
-    font-size: 1.25rem; 
-}
-
-.mobile-header span {
-  font-weight: bold;
-  color: var(--accent);
-}
-
-.mobile-header button {
-  background: none;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  padding: 0.2rem 0.5rem;
-}
-
-@media (max-width: 768px) {
-  .mobile-header { 
-    display: flex !important;
-  }
-}
-
-/* Theme Definitions */
-/* Default Theme (matches existing :root) */
 .theme-dark-blue-gray {
-  --bg-primary: #0D1117; 
-  --bg-secondary: #161B22; 
-  --bg-tertiary: #21262D; 
-  --text-primary: #c9d1d9;
-  --text-secondary: #8b949e; 
-  --accent: #38bdf8; 
-  --accent-hover: #0ea5e9;
-  --border: #30363d;
-  --text-on-accent: #FFFFFF;
-  --gradient-gold: none;
 }
 
-/* Dark (Black & Gold) */
 .theme-dark-black-gold {
   --bg-primary: #000000;
   --bg-secondary: #0a0a0a;
@@ -129,11 +118,14 @@ button {
   --accent-hover: #ffd700;
   --border: #33260f;
   --text-on-accent: #000000;
-  --gradient-gold: linear-gradient(160deg, #FFEC8B 5%, #D4AF37 30%, #B8860B 50%, #D4AF37 70%, #FFEC8B 95%);
   --shadow-subtle: 0 4px 12px rgba(212, 175, 55, 0.2);
+  
+  --gradient-gold: linear-gradient(160deg, #FFEC8B 5%, #D4AF37 30%, #B8860B 50%, #D4AF37 70%, #FFEC8B 95%);
+  --btn-background: var(--gradient-gold);
+  --header-color: var(--gradient-gold);
 }
 
-/* Dark (Deep Sea Indigo) */
+
 .theme-dark-deep-sea {
   --bg-primary: #0a0e2a;
   --bg-secondary: #121a40;
@@ -148,7 +140,6 @@ button {
   --gradient-gold: none;
 }
 
-/* Light (Classic White) */
 .theme-light-default {
   --bg-primary: #ffffff;
   --bg-secondary: #f5f7fa;
@@ -163,7 +154,6 @@ button {
   --gradient-gold: none;
 }
 
-/* Light (Quartz/Gold) */
 .theme-light-quartz {
   --bg-primary: #fdfdfd;
   --bg-secondary: #f8f6f2;
@@ -174,11 +164,13 @@ button {
   --accent-hover: #daa520;
   --border: #d4c19c;
   --text-on-accent: #333333;
-  --gradient-gold: linear-gradient(160deg, #FFFACD 5%, #F0E68C 30%, #B8860B 50%, #F0E68C 70%, #FFFACD 95%);
   --shadow-subtle: 0 4px 12px rgba(184, 134, 11, 0.15);
+  
+  --gradient-gold: linear-gradient(160deg, #FFFACD 5%, #F0E68C 30%, #B8860B 50%, #F0E68C 70%, #FFFACD 95%);
+  --btn-background: var(--gradient-gold);
+  --header-color: var(--gradient-gold);
 }
 
-/* Light (Mint/Teal) */
 .theme-light-mint-teal {
   --bg-primary: #f8fffd;
   --bg-secondary: #edfaf8;
@@ -191,4 +183,34 @@ button {
   --text-on-accent: #ffffff;
   --shadow-subtle: 0 4px 12px rgba(32, 178, 170, 0.15);
   --gradient-gold: none;
+}
+
+.theme-dark-black-gold .primary-button:hover, 
+.theme-light-quartz .primary-button:hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-dark-black-gold .primary-button:hover::after, 
+.theme-light-quartz .primary-button:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -200%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    to right, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-20deg);
+  animation: glint 1s forwards;
+}
+
+@keyframes glint {
+  to {
+    left: 200%;
+  }
 }

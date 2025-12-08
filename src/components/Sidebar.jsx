@@ -79,7 +79,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       <div className="history-section">
         <div className="history-header">
           <h3>History</h3>
-          <button className="refresh-btn" onClick={refreshHistory}>↻</button>
+          <button className="primary-button refresh-btn" onClick={refreshHistory}>↻</button>
         </div>
         <div className="history-list">
           {historyItems.length === 0 ? (

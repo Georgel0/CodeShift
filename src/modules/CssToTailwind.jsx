@@ -61,7 +61,7 @@ export default function CssToTailwind({ onLoadData }) {
             placeholder=".card { padding: 20px; background: #fff; }"
           />
           <button 
-            className="action-btn" 
+            className="primary-button action-btn" 
             onClick={handleConvert} 
             disabled={loading}
           >
@@ -89,7 +89,7 @@ export default function CssToTailwind({ onLoadData }) {
                     <div className="tailwind-code">
                       <code>{item.tailwindClasses}</code>
                       <button 
-                        className="copy-btn"
+                        className="primary-button copy-btn"
                         onClick={() => navigator.clipboard.writeText(item.tailwindClasses)}
                       >
                        Copy
