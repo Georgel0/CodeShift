@@ -169,7 +169,7 @@ textarea:focus {
 
 
 .tailwind-code code {
-  color: var(--accent);
+  color: var(--accent); 
   font-family: monospace;
   word-break: break-all;
   flex-grow: 1;

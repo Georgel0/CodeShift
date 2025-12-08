@@ -22,10 +22,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-primary); 
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 * {
@@ -45,7 +46,6 @@ button {
 }
 
 .primary-button {
-  margin-top: 10px;
   padding: 0.75rem 1.5rem;
   border-radius: var(--radius);
   font-weight: 600;
@@ -126,6 +126,11 @@ button {
   --header-color: var(--gradient-gold);
 }
 
+.theme-dark-black-gold body {
+  background-color: var(--bg-primary); 
+  color: var(--text-primary);
+}
+
 
 .theme-dark-deep-sea {
   --bg-primary: #0a0e2a;
@@ -141,6 +146,12 @@ button {
   --gradient-gold: none;
 }
 
+.theme-dark-deep-sea body {
+  background-color: var(--bg-primary); 
+  color: var(--text-primary);
+}
+
+
 .theme-light-default {
   --bg-primary: #ffffff;
   --bg-secondary: #f5f7fa;
@@ -155,6 +166,11 @@ button {
   --gradient-gold: none;
   --btn-background: var(--accent);
   --btn-background-hover: var(--accent-hover);
+}
+
+.theme-light-default body {
+  background-color: var(--bg-primary); 
+  color: var(--text-primary);
 }
 
 .theme-light-quartz {
@@ -175,21 +191,32 @@ button {
   --header-color: var(--gradient-gold);
 }
 
+.theme-light-quartz body {
+  background-color: var(--bg-primary); 
+  color: var(--text-primary);
+}
+
 .theme-light-mint-teal {
   --bg-primary: #f8fffd;
   --bg-secondary: #edfaf8;
   --bg-tertiary: #ddf5f0;
   --text-primary: #1a4b41;
   --text-secondary: #4a7c76;
-  --accent: #20b2aa;      
+  --accent: #20b2aa; 
   --accent-hover: #008b8b;
   --border: #cdeae6;
   --text-on-accent: #ffffff;
   --shadow-subtle: 0 4px 12px rgba(32, 178, 170, 0.15);
   --gradient-gold: none;
-  --btn-background: var(--accent);
+  --btn-background: var(--accent); 
   --btn-background-hover: var(--accent-hover);
 }
+
+.theme-light-mint-teal body {
+  background-color: var(--bg-primary); 
+  color: var(--text-primary);
+}
+
 
 .theme-dark-black-gold .primary-button:hover, 
 .theme-light-quartz .primary-button:hover {
