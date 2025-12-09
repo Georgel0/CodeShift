@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const THEMES_DATA = [
-  { id: 'dark-blue-gray', label: 'Dark (CodeShift Default)', group: 'Dark Themes' },
-  { id: 'dark-black-gold', label: 'Dark (Pitch Black & Gold)', group: 'Dark Themes' },
-  { id: 'dark-deep-sea', label: 'Dark (Deep Sea Indigo)', group: 'Dark Themes' },
-  { id: 'light-default', label: 'Light (Classic White)', group: 'Light Themes' },
-  { id: 'light-quartz', label: 'Light (Quartz/Gold)', group: 'Light Themes' },
-  { id: 'light-mint-teal', label: 'Light (Mint/Teal)', group: 'Light Themes' },
+  { id: 'dark-blue-gray', label: 'Default', group: 'Dark Themes' },
+  { id: 'dark-black-gold', label: 'Black/Gold', group: 'Dark Themes' },
+  { id: 'dark-deep-sea', label: 'Indigo', group: 'Dark Themes' },
+  { id: 'light-default', label: 'Classic White', group: 'Light Themes' },
+  { id: 'light-quartz', label: 'Quartz/Gold', group: 'Light Themes' },
+  { id: 'light-mint-teal', label: 'Mint/Teal', group: 'Light Themes' },
 ];
 
 const ThemeContext = createContext();
