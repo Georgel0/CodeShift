@@ -175,7 +175,7 @@ button {
 .theme-light-quartz {
   --bg-primary: #fdfdfd;
   --bg-secondary: #f8f6f2;
-  --bg-tertiary: #f0ebe1; /* Cleaned up this tertiary background */
+  --bg-tertiary: #f0ebe1;
   --text-primary: #333333;
   --text-secondary: #8b7355;
   --accent: #b8860b;
@@ -184,7 +184,7 @@ button {
   --text-on-accent: #333333;
   --shadow-subtle: 0 4px 12px rgba(184, 134, 11, 0.15);
   
-  --gradient-gold: linear-gradient(160deg, #FFFACD 5%, #F0E68C 30%, #B8860B 50%, #F0E68C 70%, #FFFACD 95%);
+  --gradient-gold: linear-gradient(160deg, #FFEC8B 5%, #D4AF37 30%, #B8860B 50%, #D4AF37 70%, #FFEC8B 95%);
   --btn-background: var(--gradient-gold);
   --btn-background-hover: var(--gradient-gold);
   --header-color: var(--gradient-gold);
