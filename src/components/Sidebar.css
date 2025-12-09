@@ -149,7 +149,8 @@
   cursor: pointer;
   transition: background 0.15s ease;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   border-left: 3px solid transparent;
 }
 
@@ -167,6 +168,19 @@
   background: var(--bg-tertiary);
 }
 
+.history-card-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.icon-btn {
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+}
 
 .history-type {
   font-weight: bold;

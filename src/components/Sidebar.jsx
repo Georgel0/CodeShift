@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { getHistory } from '../services/firebase';
+import { getHistory, deleteHistoryItem, cleanupOldHistory } from '../services/firebase';
 import './Sidebar.css';
 import { useTheme } from './ThemeContext';
 
 export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleSidebar, loadFromHistory }) {
   const [historyItems, setHistoryItems] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { currentTheme, changeTheme, groupedThemes } = useTheme();
   //Closeing the history when clicking outside of it (mobile)
   const sidebarRef = useRef(null);
@@ -25,6 +26,8 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   }, [isOpen, toggleSidebar]);
 
   const refreshHistory = async () => {
+    //Run cleanup before fetching history
+    await cleanupOldHistory();
     const data = await getHistory();
     setHistoryItems(data);
   };
@@ -32,6 +35,22 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   useEffect(() => {
     if (isOpen) refreshHistory();
   }, [isOpen]);
+  
+  //Hamdle individual deletion
+  const handleDelete = async (e, itemId) => {
+    //Preven triggering loadFromHistory when clicking the delete button
+    e.stopPropagation();
+    if (!window.confirm("Delete this history item?")) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteHistoryItem(itemId);
+      setHistoryItems(prev => prev.filter(item => item.id !== itemId));
+    } catch (error) {
+      alert("Failed to delete item.");
+    }
+    setIsDeleting(false);
+  };
 
   const navItems = [
     { id: 'css-tailwind', label: 'CSS to Tailwind' },
@@ -87,8 +106,13 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
           ) : (
             historyItems.map(item => (
               <div key={item.id} className="history-card" onClick={() => loadFromHistory(item)}>
-                <span className="history-type">{item.type}</span>
-                <span className="history-date">{new Date(item.createdAt.seconds * 1000).toLocaleDateString()}</span>
+                <div className="history-card-content">
+                  <span className="history-type">{item.type}</span>
+                  <span className="history-date">{item.createdAt && item.createdAt.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
+                </div>
+                <button className="delete-item-btn" onClick={(e) => handleDelete(e, item.id)} disabled={isDeleting}>
+                  <i className="fa fa-trash"></i>
+                </button>
               </div>
             ))
           )}

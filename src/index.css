@@ -16,6 +16,8 @@
   --btn-background-hover: var(--accent-hover);
   --btn-text: var(--text-on-accent);
   --header-color: var(--accent);
+  --danger: #ff4d4d;
+  --danger-hover: #cc0000;
 }
 
 body {
