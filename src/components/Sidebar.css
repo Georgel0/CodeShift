@@ -324,3 +324,10 @@
 .theme-dark-black-gold .nav-item:hover {
   color: var(--text-primary) !important;
 }
+
+.delete-item-btn i.fas {
+    display: inline-block !important; 
+    opacity: 1 !important;
+    color: inherit !important; 
+    line-height: 1 !important; 
+}
