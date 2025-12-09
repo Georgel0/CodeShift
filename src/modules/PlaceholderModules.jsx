@@ -16,7 +16,7 @@ export default function PlaceholderModule({ title, icon }) {
           }}
         ></i>
         <h2>Coming Soon</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>
+        <p style={{ color: 'var(--text-secondary)', display: 'flex' }}>
           This feature is currently under development.
         </p>
       </div>
