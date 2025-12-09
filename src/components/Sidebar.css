@@ -111,19 +111,21 @@
 }
 
 .refresh-btn {
+  background: transparent !important;
   color: var(--text-secondary);
   font-size: 0.9rem;
   padding: 0.3rem 0.5rem;
 }
 
 .refresh-btn:hover {
+  background: transparent !important;
   color: var(--bg-primary);
   transform: rotate(360deg);
 }
 
 .theme-dark-black-gold .refresh-btn:hover,
 .theme-light-quartz .refresh-btn:hover {
-  background: var(--accent);
+  background: transparent !important;
   color: var(--text-on-accent);
 }
 
