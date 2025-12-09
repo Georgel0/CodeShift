@@ -45,6 +45,13 @@ button {
   transition: all 0.15s ease-out;
 }
 
+.sidebar-toggle {
+  padding: 1rem; 
+  background: transparent; 
+  color: var(--text-primary); 
+  font-size: 1.5rem;
+}
+
 .primary-button {
   margin-top: 10px;
   padding: 0.75rem 1.5rem;
@@ -225,5 +232,11 @@ button {
 @keyframes glint {
   to {
     left: 200%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .sidebar-toggle {
+    display: none;
   }
 }
