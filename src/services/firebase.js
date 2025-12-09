@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously } from "firebase/auth";
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { 
+  getFirestore, collection, addDoc, query, orderBy, limit, getDocs, deleteDoc, doc, writeBatch, Timestamp, where } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -16,9 +17,57 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-signInAnonymously(auth).catch((error) => {
-  console.error("Auth Error:", error);
-});
+export const initializeAuth = () => {
+  return new Promise((resolve) => {
+    //Check if an user is allready signed in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        resolve(user);
+      } else {
+        signInAnonymously(auth).then(({ user }) => resolve(user)).catch((error) => console.error("Auth Error:", error));
+      }
+    });
+  });
+};
+
+// history cleanup
+export const cleanupOldHistory = async () => {
+  if (!auth.currentUser) return;
+  
+  const tenDaysInMs = 10 * 24 * 60 * 60 * 1000;
+  const tenDaysAgo = new Date(Date.now() - tenDaysInMs);
+  
+  try {
+    const historyRef = collection(db, "users", auth.currentUser.uid, "history");
+    const q = query(historyRef, where("createdAt", "<", Timestamp.fromDate(tenDaysAgo)));
+    
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) return;
+    //Efficient deletion of multiple docs
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+    console.log(`Cleanup: Deleted ${snapshot.size} old history items.`);
+  } catch (error) {
+    console.error("Cleanup failed:", error);
+  }
+};
+
+//Delete individual items
+export const deleteHistoryItem = async (docId) => {
+  if (!auth.currentUser) return;
+  try {
+    const docRef = doc(db, "users", auth.currentUser.uid, "history", docId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting item:", error);
+    throw error;
+  }
+};
 
 export const saveHistory = async (type, input, output) => {
   if (!auth.currentUser) return;
@@ -27,7 +76,8 @@ export const saveHistory = async (type, input, output) => {
       type,
       input: input, 
       fullOutput: output, 
-      createdAt: new Date()
+      // Firestore needs a Date/Timestamp object
+      createdAt: new Date() 
     });
   } catch (e) {
     console.error("Error adding document: ", e);
