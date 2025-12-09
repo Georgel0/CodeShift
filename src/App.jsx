@@ -5,6 +5,7 @@ import PlaceholderModule from './modules/PlaceholderModules';
 import Notification from './components/Notification';
 import './index.css';
 import { useTheme } from './components/ThemeContext';
+import { ReactComponent as Logo } from '../public/logo.svg';
 
 function App() {
   const [activeModule, setActiveModule] = useState('css-tailwind');
@@ -65,8 +66,8 @@ function App() {
              ☰
            </button>
         <div className="logo-group">
-           <img src="/logo.svg" alt="CodeShift Logo" className="logo-image" />
-           <span>CodeShift</span>
+          <Logo className="logo-image" />
+          <span>CodeShift</span>
         </div>
       </div>
       

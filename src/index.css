@@ -115,7 +115,8 @@ button {
     width: 24px;
     height: 24px;
     margin-right: 8px;
-    color: var(--header-color);
+    color: var(--accent);
+    fill: currentColor;
     background: transparent !important;
 }
 

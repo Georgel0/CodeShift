@@ -74,6 +74,11 @@
   box-shadow: 0 0 5px rgba(56, 189, 248, 0.4);
 }
 
+.theme-dark-black-gold .nav-item,
+.theme-light-quartz .nav-item {
+  color: #8b949e;
+}
+
 .theme-dark-black-gold .nav-item.active,
 .theme-light-quartz .nav-item.active {
   color: var(--accent);
@@ -197,7 +202,7 @@
   border-image-source: var(--gradient-gold);
   border-image-slice: 1;
   border-style: solid;
-  border-width: 1px 0;
+  border-width: 1px 0 0 0;
 }
 
 
