@@ -49,7 +49,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       </div>
 
       <nav className="nav-menu">
-        <h3>Modules</h3>
+        <h3>Tools:</h3>
         {navItems.map(item => (
           <button 
             key={item.id}
@@ -78,8 +78,8 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
 
       <div className="history-section">
         <div className="history-header">
-          <h3>History</h3>
-          <button className="primary-button refresh-btn" onClick={refreshHistory}>↻</button>
+          <h3>History:</h3>
+          <button className="refresh-btn" onClick={refreshHistory}>↻</button>
         </div>
         <div className="history-list">
           {historyItems.length === 0 ? (
