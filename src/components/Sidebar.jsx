@@ -111,7 +111,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
                   <span className="history-date">{item.createdAt && item.createdAt.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <button className="delete-item-btn" onClick={(e) => handleDelete(e, item.id)} disabled={isDeleting}>
-                  <i className="fa-solid fa-trash"></i>
+                  <i className="fas fa-trash"></i>
                 </button>
               </div>
             ))
