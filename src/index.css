@@ -115,6 +115,8 @@ button {
     width: 24px;
     height: 24px;
     margin-right: 8px;
+    color: var(--gradient-gold);
+    background: transparent !important;
 }
 
 .theme-dark-blue-gray {
