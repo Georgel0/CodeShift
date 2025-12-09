@@ -65,7 +65,7 @@ function App() {
              ☰
            </button>
         <div className="logo-group">
-           <img src="/logo.png" alt="CodeShift Logo" className="logo-image" />
+           <img src="/logo.svg" alt="CodeShift Logo" className="logo-image" />
            <span>CodeShift</span>
         </div>
       </div>
