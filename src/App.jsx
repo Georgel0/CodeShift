@@ -5,7 +5,7 @@ import PlaceholderModule from './modules/PlaceholderModules';
 import Notification from './components/Notification';
 import './index.css';
 import { useTheme } from './components/ThemeContext';
-import { initializedAuth } from './services/firebase';
+import { initializeAuth } from './services/firebase';
 
 function App() {
   const [activeModule, setActiveModule] = useState('css-tailwind');
@@ -21,7 +21,7 @@ function App() {
   }, [currentTheme]);
   
   useEffect(() => {
-    initializedAuth();
+    initializeAuth();
   }, []);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
