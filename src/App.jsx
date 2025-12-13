@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import CssToTailwind from './modules/CssToTailwind';
+import TsToJs from './modules/TsToJs'; 
 import PlaceholderModule from './modules/PlaceholderModules';
 import Notification from './components/Notification';
 import './index.css';
@@ -10,16 +11,15 @@ import { initializeAuth } from './services/firebase';
 function App() {
   const [activeModule, setActiveModule] = useState('css-tailwind');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // State to hold data if we are loading from history
   const [loadedData, setLoadedData] = useState(null);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const { currentTheme } = useTheme();
-  
+
   useEffect(() => {
     document.body.className = '';
     document.body.classList.add(`theme-${currentTheme}`);
   }, [currentTheme]);
-  
+
   useEffect(() => {
     initializeAuth();
   }, []);
@@ -27,13 +27,15 @@ function App() {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const loadFromHistory = (historyItem) => {
-    // Determine which module to switch to based on history type
     if (historyItem.type === 'css-tailwind') {
-      setActiveModule('css-tailwind');
-      console.log("Loaded from history:", historyItem);
-      setLoadedData(historyItem); // Store this to pass to the module later
-      setNotificationMessage(`History loaded: ${historyItem.type} conversion.`);
+        setActiveModule('css-tailwind');
+    } else if (historyItem.type === 'ts-to-js' || historyItem.type === 'js-to-ts') {
+        setActiveModule('ts-js'); 
     }
+    
+    setLoadedData(historyItem);
+    setNotificationMessage(`History loaded: ${historyItem.type} conversion.`);
+    
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
@@ -42,7 +44,7 @@ function App() {
       case 'css-tailwind':
         return <CssToTailwind onLoadData={loadedData} />;
       case 'ts-js':
-        return <PlaceholderModule title="TypeScript to JavaScript" icon="fas fa-code" />;
+        return <TsToJs onLoadData={loadedData} />;
       case 'regex':
         return <PlaceholderModule title="Regex Generator" icon="fas fa-search" />;
       case 'sql':
@@ -67,7 +69,7 @@ function App() {
       <main className="main-content">
         <div className="mobile-header"> 
            <button className="sidebar-toggle" onClick={toggleSidebar}>
-             ☰
+              ☰
            </button>
         <div className="logo-group">
           <div className="logo-image" />
