@@ -9,79 +9,88 @@ export default async function handler(req, res) {
   
   const { type, code } = req.body;
   
-  // Initialize genAI and check for API key
   if (!API_KEY) {
-    return res.status(500).json({ error: 'Server key not configured. Check Vercel environment variables.' });
+    return res.status(500).json({ error: 'Server key not configured.' });
   }
   
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const modelName = "gemini-2.5-flash"; 
+  const modelName = "gemini-2.5-flash";
   
   let systemInstruction = "";
-  
-  // Define the target JSON structure 
-  const TARGET_JSON_STRUCTURE = `{
+  let userPrompt = `Code to convert:\n${code}`; // Default User Prompt
+
+  // Defining structures
+  const CSS_JSON_STRUCTURE = `{
     "analysis": "string",
-    "conversions": [
-      {
-        "selector": "string",
-        "tailwindClasses": "string"
-      }
-    ]
+    "conversions": [{ "selector": "string", "tailwindClasses": "string", "explanation": "string" }]
   }`;
 
-  if (type === 'css-to-tailwind') {
+  const JS_TS_JSON_STRUCTURE = `{
+    "convertedCode": "string",
+    "explanation": "string"
+  }`;
+  
+  // Selecting prompts
+  if  (type === 'css-to-tailwind') {
     systemInstruction = `
       You are an expert CSS to Tailwind converter.
-      Return a JSON object matching this structure: ${TARGET_JSON_STRUCTURE}.
+      Return a JSON object matching this structure: ${CSS_JSON_STRUCTURE}.
       - 'analysis': Summary of the conversion.
       - 'conversions': Array of objects for each CSS selector.
+      - 'explanation': Brief explanation for the conversion.
     `;
+    userPrompt = `Input CSS Code to convert:\n${code}`;
+    
+  } else if (type === 'ts-to-js') {
+    systemInstruction = `
+      You are an expert TypeScript developer. Convert the input TypeScript code to modern JavaScript (ES6+).
+      - Remove type annotations, interfaces, and specific TS syntax.
+      - Return a JSON object matching this structure: ${JS_TS_JSON_STRUCTURE}.
+      - "convertedCode": The resulting JavaScript code.
+      - "explanation": Brief summary of what was stripped or changed.
+    `;
+    userPrompt = `Input TypeScript Code to convert to JavaScript:\n${code}`; 
+    
+  } else if (type === 'js-to-ts') {
+    systemInstruction = `
+      You are an expert TypeScript developer. Convert the input JavaScript code to TypeScript.
+      - Infer types where possible (avoid 'any' if easy to determine). 
+      - Define interfaces for objects if helpful.
+      - Return a JSON object matching this structure: ${JS_TS_JSON_STRUCTURE}.
+      - "convertedCode": The resulting TypeScript code.
+      - "explanation": Brief summary of types added.
+    `;
+    userPrompt = `Input JavaScript Code to convert to TypeScript:\n${code}`; 
+    
   } else {
-    systemInstruction = `Convert the following code based on the request: ${type}. Return plain text.`;
+    // Fallback for other future modules
+    systemInstruction = `Analyze the code. Return a JSON object: { "result": "output string" }`;
   }
   
   try {
-    // Configure generationConfig for JSON
-    const model = genAI.getGenerativeModel({ 
-        model: modelName,
-        systemInstruction: systemInstruction,
-        generationConfig: {
-            //forces the model to output strictly JSON
-            responseMimeType: "application/json" 
-        }
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      systemInstruction: systemInstruction,
+      generationConfig: { responseMimeType : "application/json" } 
     });
-
+    
     const result = await model.generateContent({
-      contents: [
-        { role: "user", parts: [{ text: `Input CSS Code to convert:\n${code}` }] }
-      ]
+      contents: [{ role: "user", parts: [{ 
+        text: userPrompt 
+      }] }]
     });
     
     const rawText = result?.response?.text();
     
-    if (!rawText) {
-      throw new Error("Gemini returned an empty response.");
-    }
+    if (!rawText) throw new Error("Gemini returned an empty response.");
     
-    //removes ```json, ```, and trims whitespace
     const cleanText = rawText.replace(/```json|```/g, '').trim();
+    const finalResultObject = JSON.parse(cleanText);
     
-    let finalResultObject;
-    try {
-        finalResultObject = JSON.parse(cleanText);
-    } catch(parseError) {
-        console.error("JSON Parse Error. Raw text was:", rawText);
-        throw new Error("Failed to parse AI response.");
-    }
-
     res.status(200).json(finalResultObject);
     
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    res.status(500).json({
-      error: 'Conversion failed.',
-      details: error.message
-    });
+    console.error("Gemini API error:", error);
+    res.status(500).json({ error: 'Conversion failed.', details: error.message });
   }
 }
