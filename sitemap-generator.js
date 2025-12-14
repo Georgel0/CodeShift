@@ -15,7 +15,7 @@ const links = [
 // Function to generate the sitemap
 async function generateSitemap() {
     // Create a write stream to your public folder
-    const sitemapPath = path.resolve(__dirname, 'public', 'sitemap.xml');
+    const sitemapPath = path.resolve(__dirname, 'dist', 'sitemap.xml');
     const writeStream = createWriteStream(sitemapPath);
     
     // Create the sitemap stream with your domain
