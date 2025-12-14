@@ -1,24 +1,22 @@
-const { SitemapStream, streamToPromise } = require('sitemap');
-const { createWriteStream } = require('fs');
-const path = require('path');
+import { SitemapStream, streamToPromise } from 'sitemap';
+import { createWriteStream } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+//Setup __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const YOUR_DOMAIN = 'https://code-shift-alpha.vercel.app';
 
-// entry for every unique, publicly visible page in your React app.
 const links = [
-    { 
-        url: '/', 
-        changefreq: 'daily', 
-        priority: 1.0 
-    },
+    { url: '/', changefreq: 'daily', priority: 1.0 },
 ];
-// Function to generate the sitemap
+
 async function generateSitemap() {
-    // Create a write stream to your public folder
-    const sitemapPath = path.resolve(__dirname, 'dist', 'sitemap.xml');
-    const writeStream = createWriteStream(sitemapPath);
+    const sitemapPath = resolve(__dirname, 'public', 'sitemap.xml');
     
-    // Create the sitemap stream with your domain
+    const writeStream = createWriteStream(sitemapPath);
     const smStream = new SitemapStream({ hostname: YOUR_DOMAIN });
 
     smStream.pipe(writeStream);
