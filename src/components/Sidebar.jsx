@@ -63,7 +63,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   return (
     <aside ref={sidebarRef} className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <h2>CodeShift</h2>
+        <h2>ReCode</h2>
         <button className="close-btn mobile-only" onClick={toggleSidebar}>×</button>
       </div>
 

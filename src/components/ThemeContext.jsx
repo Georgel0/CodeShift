@@ -20,7 +20,7 @@ export const ThemeProvider = ({ children }) => {
  const [isInitialized, setIsInitialized] = useState(false);
  
  useEffect(() => {
-  const savedTheme = localStorage.getItem('codeshift-theme');
+  const savedTheme = localStorage.getItem('recode-theme');
   if (savedTheme && THEMES_DATA.some(t => t.id === savedTheme)) {
    setCurrentTheme(savedTheme);
   }
@@ -29,7 +29,7 @@ export const ThemeProvider = ({ children }) => {
  
  const changeTheme = (themeId) => {
   setCurrentTheme(themeId);
-  localStorage.setItem('codeshift-theme', themeId);
+  localStorage.setItem('recode-theme', themeId);
  };
  
  const groupedThemes = THEMES_DATA.reduce((acc, theme) => {

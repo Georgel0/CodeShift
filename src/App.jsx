@@ -73,7 +73,7 @@ function App() {
            </button>
         <div className="logo-group">
           <div className="logo-image" />
-          <span>CodeShift</span>
+          <span>ReCode</span>
         </div>
       </div>
       
