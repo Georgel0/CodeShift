@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const YOUR_DOMAIN = 'https://re-code-alpha.vercel.app/';
+const YOUR_DOMAIN = 'https://recode-alpha.vercel.app/';
 
 const links = [
     { url: '/', changefreq: 'daily', priority: 1.0 },
