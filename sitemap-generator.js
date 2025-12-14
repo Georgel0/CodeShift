@@ -1,9 +1,9 @@
 import { SitemapStream, streamToPromise } from 'sitemap';
-import { createWriteStream } from 'fs';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-//Setup __dirname for ES Modules
+// Setup __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -14,20 +14,30 @@ const links = [
 ];
 
 async function generateSitemap() {
-    const sitemapPath = resolve(__dirname, 'public', 'sitemap.xml');
-    
-    const writeStream = createWriteStream(sitemapPath);
+    // Define the path to the 'dist' folder
+    const distDir = resolve(__dirname, 'dist');
+    const sitemapPath = resolve(distDir, 'sitemap.xml');
+
+    // Safety check: Ensure the 'dist' folder exists
+    if (!existsSync(distDir)) {
+        mkdirSync(distDir, { recursive: true });
+    }
+
+    // Create the sitemap stream
     const smStream = new SitemapStream({ hostname: YOUR_DOMAIN });
 
-    smStream.pipe(writeStream);
-
+    // Add links to the stream
     for (const link of links) {
         smStream.write(link);
     }
-
     smStream.end();
 
-    await streamToPromise(writeStream);
+    // Convert stream to buffer
+    const sitemapOutput = await streamToPromise(smStream);
+
+    // Write the file synchronously
+    writeFileSync(sitemapPath, sitemapOutput);
+
     console.log('Sitemap successfully generated at:', sitemapPath);
 }
 
