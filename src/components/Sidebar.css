@@ -123,14 +123,14 @@
 
 .refresh-btn:hover {
   background: transparent !important;
-  color: var(--bg-primary);
+  color: var(--text-primary);
   transform: rotate(360deg);
 }
 
 .theme-dark-black-gold .refresh-btn:hover,
 .theme-light-quartz .refresh-btn:hover {
   background: transparent !important;
-  color: var(--text-on-accent);
+  color: var(--text-primary);
 }
 
 .history-list {
