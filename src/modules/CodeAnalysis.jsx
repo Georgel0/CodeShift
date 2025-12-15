@@ -23,18 +23,18 @@ export default function CodeAnalysis({ onLoadData }) {
    }
   }
  }, [onLoadData]);
- 
+
  const handleAnalyze = async (codeOverride) => {
   const codeToProcess = codeOverride || input;
   if (!codeToProcess.trim()) return;
   
   setLoading(true);
   setAnalysis('');
-  
+
   try {
    // API call with the dedicated 'analysis' type
    const result = await convertCode('analysis', codeToProcess);
-   
+
    if (result && result.analysis) {
     setAnalysis(result.analysis);
     // Save analysis to history
@@ -47,13 +47,13 @@ export default function CodeAnalysis({ onLoadData }) {
   }
   setLoading(false);
  };
- 
+
  const handleCopy = () => {
   if (analysis) {
    navigator.clipboard.writeText(analysis);
   }
  };
- 
+
  return (
   <div className="module-container">
       <header className="module-header">
@@ -61,41 +61,53 @@ export default function CodeAnalysis({ onLoadData }) {
         <p>Get a detailed, expert explanation of any code snippet.</p>
       </header>
 
-      <div className="split-view">
+      <div className="converter-grid"> 
         {/* Input Panel */}
-        <div className="panel input-panel">
+        <div className="panel">
+          <h3>Code Snippet</h3>
           <textarea 
             value={input} 
-            onChange={(e) => setInput(e.target.value)} 
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Paste code here to analyze (e.g., the output from the converter)..." 
             spellCheck="false"
           />
-          <button 
-            className="primary-button action-btn" 
-            onClick={() => handleAnalyze()} 
-            disabled={loading}
-          >
-            {loading ? 'Analyzing...' : 'Run Analysis'}
-          </button>
+          <div className="action-row">
+            <button 
+              className="primary-button" 
+              onClick={() => handleAnalyze()} 
+              disabled={loading}
+            >
+              {loading ? 'Analyzing...' : 'Run Analysis'}
+            </button>
+          </div>
         </div>
 
         {/* Output Panel - Text Based */}
-        <div className="panel output-panel">
+        <div className="panel">
+          <h3>Analysis Results</h3>
           <div className="results-container">
             {analysis ? (
               <>
-                <div className="ai-summary full-height-summary">
+                {/* ai-summary class is used for the analysis output */}
+                <div className="ai-summary" style={{ overflowY: 'auto' }}>
+                  <strong>AI Analysis Summary</strong>
                   {/* Simple rendering for analysis with line breaks */}
                   {analysis.split('\n').map((line, i) => (
-                    <p key={i} dangerouslySetInnerHTML={{ __html: line }} style={{ minHeight: line ? 'auto' : '1rem' }} />
+                    <p 
+                      key={i} 
+                      dangerouslySetInnerHTML={{ __html: line || '&nbsp;' }} 
+                      style={{ margin: 0, padding: 0 }} 
+                    />
                   ))}
                 </div>
-                <button 
-                  className="primary-button copy-btn"
-                  onClick={handleCopy}
-                >
-                  Copy Analysis
-                </button>
+                <div className="action-row">
+                  <button 
+                    className="primary-button"
+                    onClick={handleCopy}
+                  >
+                    Copy Analysis
+                  </button>
+                </div>
               </>
             ) : (
               <div className="placeholder-text">

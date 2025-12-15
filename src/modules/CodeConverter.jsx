@@ -5,7 +5,7 @@ import './Modules.css';
 
 const LANGUAGES = [
   { value: 'javascript', label: 'JavaScript' },
-  { value: 'typescript', label: 'TypeScript' },
+  { value: 'typescript', 'label': 'TypeScript' },
   { value: 'python', label: 'Python' },
   { value: 'java', label: 'Java' },
   { value: 'csharp', label: 'C#' },
@@ -15,7 +15,6 @@ const LANGUAGES = [
   { value: 'php', label: 'PHP' },
   { value: 'swift', label: 'Swift' },
 ];
-
 export default function CodeConverter({ onLoadData, onSwitchModule }) {
   const [sourceLang, setSourceLang] = useState('javascript');
   const [targetLang, setTargetLang] = useState('python');
@@ -43,7 +42,6 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
     setInput(outputCode);
     setOutputCode(''); // Clear output as it's now old
   };
-
   const handleConvert = async () => {
     if (!input.trim()) return;
     setLoading(true);
@@ -55,7 +53,6 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
 
       if (result && result.convertedCode) {
         setOutputCode(result.convertedCode);
-        
         // Save history with language metadata
         await saveHistory('converter', input, result, sourceLang, targetLang);
       } else {
@@ -89,10 +86,13 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
         <p>Translate code between {LANGUAGES.length} programming languages with language swapping.</p>
       </header>
 
-      <div className="split-view">
+      <div className="converter-grid">
         {/* Input Panel */}
-        <div className="panel input-panel">
-          <div className="panel-controls">
+        <div className="panel">
+          <h3>Source Code: {LANGUAGES.find(l => l.value === sourceLang)?.label}</h3>
+          
+          {/* Controls: Select Language */}
+          <div className="action-row" style={{ marginBottom: '1.5rem', justifyContent: 'flex-start' }}>
             <select 
                 value={sourceLang} 
                 onChange={(e) => setSourceLang(e.target.value)}
@@ -109,10 +109,11 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
             spellCheck="false"
           />
 
+      
           {/* Action Bar */}
-          <div className="action-bar">
-             <button className="icon-button" onClick={handleSwap} title="Swap Languages">
-                ⇄ Swap
+          <div className="action-row">
+             <button className="primary-button" onClick={handleSwap}>
+                ⇄ Swap Languages
              </button>
              <button className="primary-button" onClick={handleConvert} disabled={loading}>
               {loading ? 'Converting...' : 'Convert Code'}
@@ -121,8 +122,11 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
         </div>
 
         {/* Output Panel */}
-        <div className="panel output-panel">
-          <div className="panel-controls">
+        <div className="panel">
+          <h3>Target Code: {LANGUAGES.find(l => l.value === targetLang)?.label}</h3>
+          
+          {/* Controls: Select Language & Analysis Button */}
+          <div className="action-row" style={{ marginBottom: '1.5rem', justifyContent: 'space-between' }}>
             <select 
                 value={targetLang} 
                 onChange={(e) => setTargetLang(e.target.value)}
@@ -132,19 +136,25 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
             </select>
             
             {outputCode && (
-                <button className="secondary-button" onClick={handleSendToAnalysis} title="Get detailed explanation">
+                <button className="primary-button" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={handleSendToAnalysis} title="Get detailed explanation">
                     Code Analysis
                 </button>
             )}
           </div>
 
           <div className="results-container">
+          
             {outputCode ? (
-                <div className="code-block-wrapper">
-                  <pre>{outputCode}</pre>
-                  <button className="copy-btn-absolute" onClick={handleCopy}>
-                    {copyFeedback}
-                  </button>
+                <div style={{ position: 'relative', flex: 1 }}> 
+                    <textarea 
+                        value={outputCode} 
+                        readOnly 
+                        style={{ height: '100%', paddingRight: '4rem' }} 
+                        spellCheck="false"
+                    />
+                    <button className="copy-btn" onClick={handleCopy} style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                        {copyFeedback}
+                    </button>
                 </div>
             ) : (
                 <div className="placeholder-text">
