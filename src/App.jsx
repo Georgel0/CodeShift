@@ -9,9 +9,9 @@ import { useTheme } from './components/ThemeContext';
 import { initializeAuth } from './services/firebase';
 
 function App() {
-  const [activeModule, setActiveModule] = useState('converter'); // Default to new converter
+  const [activeModule, setActiveModule] = useState('converter');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [moduleData, setModuleData] = useState(null); // Renamed loadedData for clarity
+  const [moduleData, setModuleData] = useState(null);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const { currentTheme } = useTheme();
 
@@ -34,36 +34,35 @@ function App() {
   };
   
   const loadFromHistory = (historyItem) => {
-    // Map old and new history types to the correct module component
+    // Map history types to the correct module component
     let targetModule = 'converter';
-    if (historyItem.type === 'css-tailwind' || historyItem.type === 'ts-to-js' || historyItem.type === 'js-to-ts' || historyItem.type === 'converter') {
-        targetModule = 'converter';
+    
+    if (historyItem.type === 'css-tailwind') {
+        targetModule = 'css-tailwind';
     } else if (historyItem.type === 'analysis') {
         targetModule = 'analysis';
     } else if (historyItem.type === 'generator') {
         targetModule = 'generator';
-    } else {
-        // Fallback for other placeholders
-        targetModule = historyItem.type; 
-    }
+    } 
     
-    setModuleData(historyItem);
-    setActiveModule(targetModule);
+    handleModuleSwitch(targetModule, historyItem);
     setNotificationMessage(`History loaded: ${historyItem.type} conversion.`);
-    
-    if (window.innerWidth < 768) setSidebarOpen(false);
   };
-  
+
   const renderModule = () => {
+
     switch (activeModule) {
       case 'converter':
         return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
+      
       case 'analysis':
-        return <CodeAnalysis onLoadData={moduleData} />;
+        return <CodeAnalysis onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
+      
       case 'generator':
-        return <PlaceholderModule title="Code Generator" icon="fas fa-magic" />;
-      
-      
+        return <PlaceholderModule title="Code Generator" icon="fas fa-magic" type="generator" onLoadData={moduleData} />;
+      case 'css-tailwind':
+        
+        return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} preSetSource="css" preSetTarget="tailwind" />;
       case 'regex':
         return <PlaceholderModule title="Regex Generator" icon="fas fa-search" />;
       case 'sql':

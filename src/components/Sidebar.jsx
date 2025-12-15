@@ -9,6 +9,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   const { currentTheme, changeTheme, groupedThemes } = useTheme();
   //Closeing the history when clicking outside of it (mobile)
   const sidebarRef = useRef(null);
+  
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (isOpen && window.innerWidth < 768 && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -24,74 +25,75 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       document.removeEventListener('touchstart', handleOutsideClick);
     };
   }, [isOpen, toggleSidebar]);
-
+  
   const refreshHistory = async () => {
     //Run cleanup before fetching history
     await cleanupOldHistory();
     const data = await getHistory();
     setHistoryItems(data);
   };
-
+  
   useEffect(() => {
     if (isOpen) refreshHistory();
   }, [isOpen]);
   
   //Hamdle individual deletion
   const handleDelete = async (e, itemId) => {
-    //Preven triggering loadFromHistory when clicking the delete button
+    //Prevent triggering loadFromHistory
     e.stopPropagation();
-    if (!window.confirm("Delete this history item?")) return;
     
-    setIsDeleting(true);
-    try {
-      await deleteHistoryItem(itemId);
-      setHistoryItems(prev => prev.filter(item => item.id !== itemId));
-    } catch (error) {
-      alert("Failed to delete item.");
+    if (window.confirm('Are you sure you want to delete this history item?')) {
+      setIsDeleting(true);
+      try {
+        await deleteHistoryItem(itemId);
+        setHistoryItems(historyItems.filter(item => item.id !== itemId));
+      } catch (error) {
+        alert('Failed to delete history item.');
+      } finally {
+        setIsDeleting(false);
+      }
     }
-    setIsDeleting(false);
   };
   
-  // Helper for better history labels
-  const getHistoryLabel = (item) => {
-      if (item.type === 'converter') return `${item.sourceLang} → ${item.targetLang}`;
-      if (item.type === 'css-tailwind') return 'CSS → Tailwind (Legacy)';
-      if (item.type === 'ts-to-js') return 'TS → JS (Legacy)';
-      if (item.type === 'js-to-ts') return 'JS → TS (Legacy)';
-      if (item.type === 'analysis') return 'Code Analysis';
-      if (item.type === 'generator') return 'Code Generator';
-      return item.type;
-  };
-
-  const navItems = [
-    { id: 'converter', label: 'Universal Converter' },
-    { id: 'analysis', label: 'Code Analysis' },
-    { id: 'generator', label: 'Code Generator' },
+  const modules = [
+    { id: 'converter', label: 'Code Converter (Polyglot)', icon: 'fas fa-sync-alt' },
+    { id: 'analysis', label: 'Code Analyzer', icon: 'fas fa-brain' },
+    { id: 'generator', label: 'Code Generator', icon: 'fas fa-magic' },
+    { id: 'css-tailwind', label: 'CSS to Tailwind', icon: 'fas fa-swatchbook' },
+    { id: 'regex', label: 'Regex Generator', icon: 'fas fa-search' },
+    { id: 'sql', label: 'SQL Builder', icon: 'fas fa-database' },
+    { id: 'json', label: 'JSON Formatter', icon: 'fas fa-list-alt' },
   ];
-
+  
   return (
-    <aside ref={sidebarRef} className={`sidebar ${isOpen ? 'open' : ''}`}>
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`} ref={sidebarRef}>
       <div className="sidebar-header">
-        <h2>ReCode</h2>
-        <button className="close-btn mobile-only" onClick={toggleSidebar}>×</button>
+        <div className="logo-group">
+          <div className="logo-image" />
+          <h2>ReCode</h2>
+        </div>
+        <button className="close-btn" onClick={toggleSidebar}>
+          ✕
+        </button>
       </div>
 
       <nav className="nav-menu">
-        <h3>Tools:</h3>
-        {navItems.map(item => (
-          <button 
-            key={item.id}
-            className={`nav-item ${activeModule === item.id ? 'active' : ''}`}
-            onClick={() => { setActiveModule(item.id); if(window.innerWidth < 768) toggleSidebar(); }}
+        <h3>Modules</h3>
+        {modules.map(module => (
+          <a
+            key={module.id}
+            href="#"
+            className={`nav-item ${activeModule === module.id ? 'active' : ''}`}
+            onClick={() => setActiveModule(module.id)}
           >
-            {item.label}
-          </button>
+            <i className={module.icon}></i>
+            {module.label}
+          </a>
         ))}
       </nav>
       
-      <div className="theme-selector-section">
+      <div className="theme-selector-group">
         <h3>Theme:</h3>
-  
         <select value={currentTheme} onChange={(e) => changeTheme(e.target.value)} className="theme-select-dropdown">
           {Object.entries(groupedThemes).map(([group, themes]) => (
             <optgroup key={group} label={group}>
@@ -109,7 +111,6 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
         <div className="history-header">
           <h3>History:</h3>
           <button className="refresh-btn" onClick={refreshHistory}>↻</button>
-      
         </div>
         <div className="history-list">
           {historyItems.length === 0 ? (
@@ -118,12 +119,17 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
             historyItems.map(item => (
               <div key={item.id} className="history-card" onClick={() => loadFromHistory(item)}>
                 <div className="history-card-content">
-                  <span className="history-type">{getHistoryLabel(item)}</span>
+                  {/* Display language pair for generic converter */}
+                  <span className="history-type">
+                    {item.type === 'converter' 
+                      ? `${item.sourceLang?.toUpperCase()} to ${item.targetLang?.toUpperCase()}`
+                      : item.type}
+                  </span>
                   <span className="history-date">{item.createdAt && item.createdAt.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <button className="delete-item-btn" onClick={(e) => handleDelete(e, item.id)} disabled={isDeleting}>
                   <i className="fas fa-trash"></i>
-                </button>
+                  </button>
               </div>
             ))
           )}
