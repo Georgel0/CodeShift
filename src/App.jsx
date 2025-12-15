@@ -60,10 +60,6 @@ function App() {
       case 'css-tailwind': 
         // Renders the generic CSS converter, defaulting to Tailwind
         return <CssFrameworkConverter onLoadData={moduleData} preSetTarget="tailwind" />;
-
-      case 'ts-js': 
-        // Re-route old specific modules to the generic CodeConverter
-        return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} preSetSource="typescript" preSetTarget="javascript" />;
       
       // Temporary placeholders for in-progress modules
       case 'generator':

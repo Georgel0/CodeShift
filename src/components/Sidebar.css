@@ -319,6 +319,11 @@
 
 .nav-menu i {
   text-decoration: none;
+  margin-right: 5px;
+}
+
+.nav-menu a {
+  text-decoration: none;
 }
 
 .theme-dark-black-gold .nav-item.active {
