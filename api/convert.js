@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   const genAI = new GoogleGenerativeAI(API_KEY);
   
-  const modelName = "gemini-2.0-flash";
+  const modelName = "gemini-2.5-flash";
 
   let systemInstruction = "";
   let userPrompt = `Code to convert:\n${code}`;
