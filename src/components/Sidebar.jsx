@@ -56,10 +56,10 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   };
   
   const modules = [
-    { id: 'converter', label: 'Code Converter (Polyglot)', icon: 'fas fa-sync-alt' },
+    { id: 'converter', label: 'Code Converter', icon: 'fas fa-sync-alt' },
     { id: 'analysis', label: 'Code Analyzer', icon: 'fas fa-brain' },
     { id: 'generator', label: 'Code Generator', icon: 'fas fa-magic' },
-    { id: 'css-tailwind', label: 'CSS to Tailwind', icon: 'fas fa-swatchbook' },
+    { id: 'css-tailwind', label: 'CSS Frameworks', icon: 'fas fa-swatchbook' },
     { id: 'regex', label: 'Regex Generator', icon: 'fas fa-search' },
     { id: 'sql', label: 'SQL Builder', icon: 'fas fa-database' },
     { id: 'json', label: 'JSON Formatter', icon: 'fas fa-list-alt' },
