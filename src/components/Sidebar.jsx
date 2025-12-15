@@ -51,13 +51,22 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
     }
     setIsDeleting(false);
   };
+  
+  // Helper for better history labels
+  const getHistoryLabel = (item) => {
+      if (item.type === 'converter') return `${item.sourceLang} → ${item.targetLang}`;
+      if (item.type === 'css-tailwind') return 'CSS → Tailwind (Legacy)';
+      if (item.type === 'ts-to-js') return 'TS → JS (Legacy)';
+      if (item.type === 'js-to-ts') return 'JS → TS (Legacy)';
+      if (item.type === 'analysis') return 'Code Analysis';
+      if (item.type === 'generator') return 'Code Generator';
+      return item.type;
+  };
 
   const navItems = [
-    { id: 'css-tailwind', label: 'CSS to Tailwind' },
-    { id: 'ts-js', label: 'TS to JS' },
-    { id: 'regex', label: 'Regex Generator' },
-    { id: 'sql', label: 'SQL Builder' },
-    { id: 'json', label: 'JSON Formatter' },
+    { id: 'converter', label: 'Universal Converter' },
+    { id: 'analysis', label: 'Code Analysis' },
+    { id: 'generator', label: 'Code Generator' },
   ];
 
   return (
@@ -82,6 +91,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       
       <div className="theme-selector-section">
         <h3>Theme:</h3>
+  
         <select value={currentTheme} onChange={(e) => changeTheme(e.target.value)} className="theme-select-dropdown">
           {Object.entries(groupedThemes).map(([group, themes]) => (
             <optgroup key={group} label={group}>
@@ -99,6 +109,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
         <div className="history-header">
           <h3>History:</h3>
           <button className="refresh-btn" onClick={refreshHistory}>↻</button>
+      
         </div>
         <div className="history-list">
           {historyItems.length === 0 ? (
@@ -107,12 +118,12 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
             historyItems.map(item => (
               <div key={item.id} className="history-card" onClick={() => loadFromHistory(item)}>
                 <div className="history-card-content">
-                  <span className="history-type">{item.type}</span>
+                  <span className="history-type">{getHistoryLabel(item)}</span>
                   <span className="history-date">{item.createdAt && item.createdAt.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <button className="delete-item-btn" onClick={(e) => handleDelete(e, item.id)} disabled={isDeleting}>
                   <i className="fas fa-trash"></i>
-                  </button>
+                </button>
               </div>
             ))
           )}

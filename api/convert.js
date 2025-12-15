@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { type, code } = req.body;
+  const { type, code, sourceLang, targetLang } = req.body;
 
   if (!API_KEY) {
     return res.status(500).json({ error: 'Server key not configured.' });
@@ -18,54 +18,61 @@ export default async function handler(req, res) {
   const modelName = "gemini-2.5-flash";
 
   let systemInstruction = "";
-  let userPrompt = `Code to convert:\n${code}`;
-
-  // Defining structures
-  const CSS_JSON_STRUCTURE = `{
-    "analysis": "string",
-    "conversions": [{ "selector": "string", "tailwindClasses": "string", "explanation": "string" }]
+  let userPrompt = `Input Code:\n${code}`;
+  
+  // JSON structures
+  const CONVERTER_JSON_STRUCTURE = `{
+    "convertedCode": "string"
   }`;
-
-  const JS_TS_JSON_STRUCTURE = `{
+  
+  const ANALYSIS_JSON_STRUCTURE = `{
+    "analysis": "string (A detailed, multi-paragraph explanation using Markdown for readability.)"
+  }`;
+  
+  const GENERATOR_JSON_STRUCTURE = `{
     "convertedCode": "string",
-    "explanation": "string"
+    "explanation": "string (Brief usage instructions.)"
   }`;
 
-  // Selecting prompts
-  if (type === 'css-to-tailwind') {
+  // GENERIC CONVERTER
+  if (type === 'converter') {
     systemInstruction = `
-      You are an expert CSS to Tailwind converter.
-      Return a JSON object matching this structure: ${CSS_JSON_STRUCTURE}.
-      - 'analysis': Summary of the conversion.
-      - 'conversions': Array of objects for each CSS selector.
-      - 'explanation': Brief explanation for the conversion.
+      You are an expert Polyglot Programmer. 
+      Convert the input code from ${sourceLang} to ${targetLang}.
+      
+      Rules:
+      1. Return valid, idiomatic ${targetLang} code.
+      2. Return a JSON object matching this structure: ${CONVERTER_JSON_STRUCTURE}.
+      3. Do NOT include explanations, comments, or any extra text outside the JSON.
     `;
-    userPrompt = `Input CSS Code to convert:\n${code}`;
-
-  } else if (type === 'ts-to-js') {
+    userPrompt = `Code to convert from ${sourceLang} to ${targetLang}:\n${code}`;
+  } 
+  // CODE ANALYSIS
+  else if (type === 'analysis') {
     systemInstruction = `
-      You are an expert TypeScript developer. Convert the input TypeScript code to modern JavaScript (ES6+).
-      - Remove type annotations, interfaces, and specific TS syntax.
-      - Return a JSON object matching this structure: ${JS_TS_JSON_STRUCTURE}.
-      - "convertedCode": The resulting JavaScript code.
-      - "explanation": Brief summary of what was stripped or changed.
+      You are a Senior Tech Lead conducting a code review.
+      Analyze the provided code in detail.
+      
+      Rules:
+      1. Provide a detailed, multi-paragraph explanation of how the code works, its logic, and potential improvements. Use Markdown formatting (bolding, lists) for readability.
+      2. Return a JSON object matching this structure: ${ANALYSIS_JSON_STRUCTURE}.
     `;
-    userPrompt = `Input TypeScript Code to convert to JavaScript:\n${code}`;
-
-  } else if (type === 'js-to-ts') {
+    userPrompt = `Code to analyze:\n${code}`;
+  }
+  // CODE GENERATOR 
+  else if (type === 'generator') {
     systemInstruction = `
-      You are an expert TypeScript developer. Convert the input JavaScript code to TypeScript.
-      - Infer types where possible (avoid 'any' if easy to determine). 
-      - Define interfaces for objects if helpful.
-      - Return a JSON object matching this structure: ${JS_TS_JSON_STRUCTURE}.
-      - "convertedCode": The resulting TypeScript code.
-      - "explanation": Brief summary of types added.
+      Generate code based on the user's request.
+      Rules:
+      1. Return the generated code and brief usage instructions.
+      2. Dont put any comments in the code, any explanetoon needed you will probide in the explenation section from the 3rd rule.
+      3. Return a JSON object matching this structure: ${GENERATOR_JSON_STRUCTURE}.
     `;
-    userPrompt = `Input JavaScript Code to convert to TypeScript:\n${code}`;
-
-  } else {
-    // Fallback for other future modules
-    systemInstruction = `Analyze the code. Return a JSON object: { "result": "output string" }`;
+    userPrompt = `Request: ${code}`;
+  }
+  else {
+    // Fallback for unknown type
+    systemInstruction = `Analyze. Return JSON: { "result": "Unknown module type." }`;
   }
 
   try {
@@ -83,7 +90,7 @@ export default async function handler(req, res) {
 
     if (!rawText) throw new Error("Gemini returned an empty response.");
 
-    // Clean up markdown code blocks if the model includes them
+    // Clean up markdown code blocks
     const cleanText = rawText.replace(/```json|```/g, '').trim();
     const finalResultObject = JSON.parse(cleanText);
 

@@ -1,10 +1,15 @@
-export const convertCode = async (type, code) => {
+export const convertCode = async (type, code, sourceLang = null, targetLang = null) => {
+    // Pass languages only if provided (needed for generic converter)
+    const body = { type, code };
+    if (sourceLang) body.sourceLang = sourceLang;
+    if (targetLang) body.targetLang = targetLang;
+    
     const response = await fetch('/api/convert', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type, code }),
+        body: JSON.stringify(body),
     });
     
     // Check if the response was successful 
@@ -18,7 +23,6 @@ export const convertCode = async (type, code) => {
             // Ignore error reading body
         }
         
-        // Throw a helpful error message
         throw new Error(`API Request failed with status ${response.status}: ${errorBody || 'No response body provided.'}`);
     }
     

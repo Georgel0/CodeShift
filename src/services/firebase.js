@@ -69,16 +69,20 @@ export const deleteHistoryItem = async (docId) => {
   }
 };
 
-export const saveHistory = async (type, input, output) => {
+export const saveHistory = async (type, input, output, sourceLang = null, targetLang = null) => {
   if (!auth.currentUser) return;
   try {
-    await addDoc(collection(db, "users", auth.currentUser.uid, "history"), {
+    const data = {
       type,
       input: input, 
       fullOutput: output, 
-      // Firestore needs a Date/Timestamp object
       createdAt: new Date() 
-    });
+    };
+
+    if (sourceLang) data.sourceLang = sourceLang;
+    if (targetLang) data.targetLang = targetLang;
+
+    await addDoc(collection(db, "users", auth.currentUser.uid, "history"), data);
   } catch (e) {
     console.error("Error adding document: ", e);
   }
