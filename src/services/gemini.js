@@ -1,5 +1,5 @@
 export const convertCode = async (type, code, sourceLang = null, targetLang = null) => {
-    // Pass languages only if provided (needed for generic converter)
+    // Pass languages only if provided (needed for generic and css-framework converters)
     const body = { type, code };
     if (sourceLang) body.sourceLang = sourceLang;
     if (targetLang) body.targetLang = targetLang;
@@ -23,6 +23,7 @@ export const convertCode = async (type, code, sourceLang = null, targetLang = nu
             // Ignore error reading body
         }
         
+        // Throw a helpful error message
         throw new Error(`API Request failed with status ${response.status}: ${errorBody || 'No response body provided.'}`);
     }
     

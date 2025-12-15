@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import CodeConverter from './modules/CodeConverter';
 import CodeAnalysis from './modules/CodeAnalysis';
+import CssFrameworkConverter from './modules/CssFrameworkConverter'; 
 import PlaceholderModule from './modules/PlaceholderModules'; 
 import Notification from './components/Notification';
 import './index.css';
@@ -34,11 +35,10 @@ function App() {
   };
   
   const loadFromHistory = (historyItem) => {
-    // Map history types to the correct module component
     let targetModule = 'converter';
     
-    if (historyItem.type === 'css-tailwind') {
-        targetModule = 'css-tailwind';
+    if (historyItem.type === 'css-framework' || historyItem.type === 'css-tailwind') {
+        targetModule = 'css-tailwind'; 
     } else if (historyItem.type === 'analysis') {
         targetModule = 'analysis';
     } else if (historyItem.type === 'generator') {
@@ -50,7 +50,6 @@ function App() {
   };
 
   const renderModule = () => {
-
     switch (activeModule) {
       case 'converter':
         return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
@@ -58,11 +57,17 @@ function App() {
       case 'analysis':
         return <CodeAnalysis onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
       
+      case 'css-tailwind': 
+        // Renders the generic CSS converter, defaulting to Tailwind
+        return <CssFrameworkConverter onLoadData={moduleData} preSetTarget="tailwind" />;
+
+      case 'ts-js': 
+        // Re-route old specific modules to the generic CodeConverter
+        return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} preSetSource="typescript" preSetTarget="javascript" />;
+      
+      // Temporary placeholders for in-progress modules
       case 'generator':
         return <PlaceholderModule title="Code Generator" icon="fas fa-magic" type="generator" onLoadData={moduleData} />;
-      case 'css-tailwind':
-        
-        return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} preSetSource="css" preSetTarget="tailwind" />;
       case 'regex':
         return <PlaceholderModule title="Regex Generator" icon="fas fa-search" />;
       case 'sql':
@@ -78,7 +83,6 @@ function App() {
     <div className='container'>
       <Sidebar 
         activeModule={activeModule} 
-        // Pass handleModuleSwitch to clear data when switching manually
         setActiveModule={(mod) => handleModuleSwitch(mod, null)} 
         isOpen={sidebarOpen}
         toggleSidebar={toggleSidebar}

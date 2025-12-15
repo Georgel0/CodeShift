@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { type, code, sourceLang, targetLang } = req.body; // Destructure new language params
+  const { type, code, sourceLang, targetLang } = req.body; // Destructure all required params
 
   if (!API_KEY) {
     return res.status(500).json({ error: 'Server key not configured.' });
@@ -26,8 +26,11 @@ export default async function handler(req, res) {
   const ANALYSIS_JSON_STRUCTURE = `{\n    \"analysis\": \"string (A detailed, multi-paragraph explanation using Markdown for readability.)\"\n  }`;
   
   const GENERATOR_JSON_STRUCTURE = `{\n    \"convertedCode\": \"string\",\n    \"explanation\": \"string (Brief usage instructions.)\"\n  }`;
+  
+  // STRUCTURE FOR CSS FRAMEWORK CONVERTER
+  const CSS_FRAMEWORK_STRUCTURE = `{\n    \"analysis\": \"string\",\n    \"conversions\": [{ \"selector\": \"string\", \"tailwindClasses\": \"string\", \"explanation\": \"string\" }]\n  }`;
 
-  // GENERIC CONVERTER 
+  // GENERIC CONVERTER (For code-to-code)
   if (type === 'converter') {
     if (!sourceLang || !targetLang) {
       return res.status(400).json({ error: 'Source and target languages are required for converter type.' });
@@ -42,18 +45,24 @@ export default async function handler(req, res) {
     `;
     userPrompt = `Code to convert from ${sourceLang} to ${targetLang}:\n${code}`;
   }
-
-  else if (type === 'css-tailwind') {
-
-    const CSS_JSON_STRUCTURE = `{\n    \"analysis\": \"string\",\n    \"conversions\": [{ \"selector\": \"string\", \"tailwindClasses\": \"string\", \"explanation\": \"string\" }]\n  }`;
+  // CSS FRAMEWORK CONVERTER
+  else if (type === 'css-framework') {
+    if (!targetLang) {
+        return res.status(400).json({ error: 'Target language/framework is required for CSS framework conversion.' });
+    }
+    
     systemInstruction = `
-      You are an expert CSS to Tailwind converter.
-      Return a JSON object matching this structure: ${CSS_JSON_STRUCTURE}.
-      - 'analysis': Summary of the conversion.
-      - 'conversions': Array of objects for each CSS selector.
-      - 'explanation': Brief explanation for the conversion.
+        You are an expert in CSS frameworks. Your task is to convert standard CSS properties into the equivalent format for **${targetLang}**.
+        
+        Rules:
+        1. For utility frameworks (like Tailwind or Bootstrap), the output MUST be classes and placed in the 'tailwindClasses' field.
+        2. For preprocessors (like SASS/LESS), the output MUST be the equivalent code structure.
+        3. Return a JSON object matching this structure: ${CSS_FRAMEWORK_STRUCTURE}.
+        - 'analysis': Summary of the conversion.
+        - 'conversions': Array of objects for each CSS selector.
+        - 'explanation': Brief explanation for the conversion.
     `;
-    userPrompt = `Input CSS Code to convert:\\n${code}`;
+    userPrompt = `Convert the following standard CSS into ${targetLang} format:\\n${code}`;
   }
   // CODE ANALYSIS
   else if (type === 'analysis') {
@@ -74,11 +83,22 @@ export default async function handler(req, res) {
       Rules:
       1. The generated code MUST be returned in the 'convertedCode' field.
       2. The 'explanation' field MUST contain brief usage instructions or notes.
-      3. Do not include any comments in the code.
-      4. Return a JSON object matching this structure: ${GENERATOR_JSON_STRUCTURE}.
+      3. Return a JSON object matching this structure: ${GENERATOR_JSON_STRUCTURE}.
     `;
     userPrompt = `Request: ${code}`;
   }
+  // FALLBACK FOR OLD/UNKNOWN TYPES (Kept for compatibility)
+  else if (type === 'css-to-tailwind') {
+    // Legacy: Redirect to the new logic but use default target
+    systemInstruction = `
+        You are an expert CSS to Tailwind converter.
+        Return a JSON object matching this structure: ${CSS_FRAMEWORK_STRUCTURE}.
+        - 'analysis': Summary of the conversion.
+        - 'conversions': Array of objects for each CSS selector.
+        - 'explanation': Brief explanation for the conversion.
+    `;
+    userPrompt = `Convert the following standard CSS into Tailwind format:\\n${code}`;
+  } 
   else {
     // Fallback for unknown type
     systemInstruction = `Analyze. Return JSON: { \"result\": \"Unknown module type: ${type}.\" }`;

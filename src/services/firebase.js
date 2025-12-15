@@ -33,13 +33,11 @@ export const initializeAuth = () => {
 // history cleanup
 export const cleanupOldHistory = async () => {
   if (!auth.currentUser) return;
-  
-  const tenDaysInMs = 10 * 24 * 60 * 60 * 1000;
-  const tenDaysAgo = new Date(Date.now() - tenDaysInMs);
-  
   try {
-    const historyRef = collection(db, "users", auth.currentUser.uid, "history");
-    const q = query(historyRef, where("createdAt", "<", Timestamp.fromDate(tenDaysAgo)));
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    
+    const q = query(collection(db, "users", auth.currentUser.uid, "history"), where("createdAt", "<", Timestamp.fromDate(tenDaysAgo)));
     
     const snapshot = await getDocs(q);
     
@@ -69,6 +67,7 @@ export const deleteHistoryItem = async (docId) => {
   }
 };
 
+// Updated saveHistory to include sourceLang and targetLang
 export const saveHistory = async (type, input, output, sourceLang = null, targetLang = null) => {
   if (!auth.currentUser) return;
   try {
@@ -79,6 +78,7 @@ export const saveHistory = async (type, input, output, sourceLang = null, target
       createdAt: new Date() 
     };
 
+    // Only save if provided
     if (sourceLang) data.sourceLang = sourceLang;
     if (targetLang) data.targetLang = targetLang;
 
@@ -91,10 +91,20 @@ export const saveHistory = async (type, input, output, sourceLang = null, target
 export const getHistory = async () => {
   if (!auth.currentUser) return [];
   const q = query(
-    collection(db, "users", auth.currentUser.uid, "history"), 
-    orderBy("createdAt", "desc"), 
-    limit(20)
+    collection(db, "users", auth.currentUser.uid, "history"),
+    orderBy("createdAt", "desc"),
+    limit(50)
   );
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  try {
+    const querySnapshot = await getDocs(q);
+    const history = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    return history;
+  } catch (error) {
+    console.error("Error fetching history:", error);
+    return [];
+  }
 };
