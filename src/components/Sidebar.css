@@ -317,6 +317,10 @@
   color: #BBBCCB !important; 
 }
 
+.nav-menu i {
+  text-decoration: none;
+}
+
 .theme-dark-black-gold .nav-item.active {
   color: var(--accent) !important;
 }

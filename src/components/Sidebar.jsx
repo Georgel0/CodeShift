@@ -86,8 +86,8 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
             className={`nav-item ${activeModule === module.id ? 'active' : ''}`}
             onClick={() => setActiveModule(module.id)}
           >
-            <i className={module.icon}></i>
-            {module.label}
+             <i className={module.icon}></i>
+             {module.label}
           </a>
         ))}
       </nav>
