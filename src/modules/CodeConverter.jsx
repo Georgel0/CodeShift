@@ -113,7 +113,7 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
           {/* Action Bar */}
           <div className="action-row">
              <button className="primary-button" onClick={handleSwap}>
-                ⇄ Swap Languages
+                ⇄ Swap
              </button>
              <button className="primary-button" onClick={handleConvert} disabled={loading}>
               {loading ? 'Converting...' : 'Convert Code'}
