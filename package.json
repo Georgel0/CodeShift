@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "firebase": "^12.6.0",
+    "groq-sdk": "^0.37.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
