@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { convertCode } from '../services/gemini';
+import { convertCode } from '../services/api';
 import { saveHistory } from '../services/firebase';
 import './Modules.css';
 
