@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = "GEMINI_API_KEY"; // Ensure this is securely managed
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // Helper for retry delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
