@@ -1,6 +1,8 @@
 const callApi = async (type, input, sourceLang, targetLang) => {
     let lastError;
-    for (let i = 0; i < 3; i++) { // Try up to 3 times
+    const MAX_RETRIES = 3;
+
+    for (let i = 0; i < MAX_RETRIES; i++) {
         try {
             const response = await fetch('/api/convert', {
                 method: 'POST',
@@ -10,77 +12,83 @@ const callApi = async (type, input, sourceLang, targetLang) => {
                 body: JSON.stringify({ type, input, sourceLang, targetLang }),
             });
 
-            // Check if the HTTP response was successful.
+            // If response status is not OK (e.g., 4xx, 5xx)
             if (!response.ok) {
                 const status = response.status;
                 let message;
 
-                // Try to read the error body as JSON first, if not, read as text.
+                // Clone the response to safely read the body, as it can only be consumed once.
+                const clonedResponse = response.clone(); 
+
                 try {
+                    // Try reading error body as JSON first
                     const errorBody = await response.json();
                     message = errorBody.error || `HTTP error! Status: ${status} - Details unavailable.`;
                 } catch (e) {
-                    // If JSON.parse fails here (e.g., it got "A server e..." plain text), 
-                    // read the body as a string.
-                    const errorText = await response.text();
-                    message = `Server Error (${status}): ${errorText.substring(0, 50)}...`;
-                    console.error("Non-JSON Error Body Received:", errorText);
+                    // If JSON parsing fails (e.g., received plain text/HTML error page), read as text.
+                    try {
+                        const errorText = await clonedResponse.text();
+                        message = `Server Error (${status}): ${errorText.substring(0, 50)}...`;
+                        console.error("Non-JSON Error Body Received:", errorText);
+                    } catch (readError) {
+                        message = `Server Error (${status}): Could not read error body.`;
+                    }
                 }
                 
-                // If it's a 503 (overloaded) or 429 (rate limit), retry.
+                // Retry for Overload/Rate Limit errors
                 if (status === 503 || status === 429) {
                     lastError = new Error(message);
-                    const waitTime = 2 ** i * 1000; // Exponential Backoff: 1s, 2s, 4s
+                    const waitTime = 2 ** i * 1000; 
                     console.warn(`Attempt ${i + 1} failed with status ${status}. Retrying in ${waitTime}ms...`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
-                    continue; // Go to the next loop iteration (retry)
+                    continue; // Retry
                 }
 
-                // For all other errors (like 500), throw immediately
+                // For all other errors, throw immediately
                 throw new Error(message);
             }
 
-            // If response.ok, safely return the JSON data
+            // If response.ok, return the JSON data
             const data = await response.json();
             return data;
             
         } catch (error) {
             lastError = error;
-            console.error(`Attempt ${i + 1} failed (Fetch/Network Error):`, error);
-            if (i < 2) { // Wait before retrying, except after the last attempt
+            console.error(`Attempt ${i + 1} failed (Fetch/Network/Other Error):`, error);
+            if (i < MAX_RETRIES - 1) { 
                 await new Promise(resolve => setTimeout(resolve, 2 ** i * 1000));
             }
         }
     }
-    // If all retries fail, throw the last error
-    throw lastError || new Error("API request failed after multiple retries. Check Vercel logs for 500 error details.");
+
+    throw lastError || new Error("API request failed after multiple retries. Check server logs.");
 };
 
 export const convertCode = async (type, input, sourceLang = '', targetLang = '') => {
-    // This call handles the 500 error from the serverless function
     const apiResponse = await callApi(type, input, sourceLang, targetLang);
     const rawText = apiResponse.text; 
-    
+
+    // Specific handler for 'css-framework' type which expects JSON in the text field
     if (type === 'css-framework') {
-        // Strip backticks only for JSON parsing
+        // Strip backticks for JSON parsing
         let text = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
 
         try {
             // Safely attempt to parse the JSON
             return JSON.parse(text);
         } catch (e) {
-            // CRITICAL: Catch the parsing error and return a safe object instead of crashing the function
             console.error("JSON Parse Error (AI Response):", e.message);
 
-            // Return a safe error structure that CssFrameworkConverter.jsx expects
+            // Return a safe error structure for CssFrameworkConverter.jsx
             return {
                 error: "The AI did not return valid JSON. Please try again or simplify the CSS.",
                 rawResponse: rawText,
                 analysis: "The AI response could not be processed due to invalid formatting.",
-                conversions: [] // Essential: Ensure the 'conversions' array exists to prevent a crash in the UI
+                conversions: []
             };
         }
     }
-// For other types, return the structure from the backend
+    
+    // For other types, return the structure from the backend
     return apiResponse;
 };
