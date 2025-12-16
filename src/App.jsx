@@ -36,9 +36,8 @@ function App() {
   
   const loadFromHistory = (historyItem) => {
     let targetModule = 'converter';
-    
     if (historyItem.type === 'css-framework' || historyItem.type === 'css-tailwind') {
-        targetModule = 'css-tailwind'; 
+        targetModule = 'css-tailwind';
     } else if (historyItem.type === 'analysis') {
         targetModule = 'analysis';
     } else if (historyItem.type === 'generator') {
@@ -53,14 +52,14 @@ function App() {
     switch (activeModule) {
       case 'converter':
         return <CodeConverter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
-      
       case 'analysis':
         return <CodeAnalysis onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
-      
       case 'css-tailwind': 
-        // Renders the generic CSS converter, defaulting to Tailwind
-        return <CssFrameworkConverter onLoadData={moduleData} preSetTarget="tailwind" />;
-      
+        return <CssFrameworkConverter 
+                  onLoadData={moduleData} 
+                  preSetTarget="tailwind" 
+                  onSwitchModule={handleModuleSwitch} 
+               />;
       // Temporary placeholders for in-progress modules
       case 'generator':
         return <PlaceholderModule title="Code Generator" icon="fas fa-magic" type="generator" onLoadData={moduleData} />;
@@ -99,7 +98,7 @@ function App() {
       {renderModule()}
       </main>
        <Notification message={notificationMessage} /> 
-     </div>
+    </div>
   );
 }
 

@@ -1,5 +1,3 @@
-// modules/CssFrameworkConverter.jsx
-
 import { useState, useEffect } from 'react';
 import { convertCode } from '../services/gemini';
 import { saveHistory } from '../services/firebase';
@@ -12,47 +10,41 @@ const TARGET_FRAMEWORKS = [
   { value: 'less', label: 'LESS' },
 ];
 
-export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tailwind' }) {
+export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tailwind', onSwitchModule }) {
   const [input, setInput] = useState('');
-  const [targetLang, setTargetLang] = useState(preSetTarget); 
-  const [data, setData] = useState(null); 
+  const [targetLang, setTargetLang] = useState(preSetTarget);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  
   // Load data from history or preSetTarget on component mount/update
   useEffect(() => {
     if (onLoadData) {
-      setInput(onLoadData.input || ''); 
+      setInput(onLoadData.input || '');
       setData(onLoadData.fullOutput || null);
-      // Restore the specific framework used if it was saved
       if (onLoadData.targetLang) setTargetLang(onLoadData.targetLang);
     } else {
-      // If no history, use the default preset (e.g., 'tailwind')
       setTargetLang(preSetTarget);
       setInput('');
       setData(null);
     }
   }, [onLoadData, preSetTarget]);
   
-  // Main Conversion Handler
   const handleConvert = async () => {
     if (!input.trim()) return;
     setLoading(true);
     setData(null);
-
+    
     try {
-      // Use the 'css-framework' type in the API call
-      // sourceLang is 'css', targetLang is the selected framework (tailwind, bootstrap, etc.)
       const result = await convertCode('css-framework', input, 'css', targetLang);
-
+      
       if (result && result.conversions) {
-          setData(result);
-          // Save history with the specific target framewor
-          await saveHistory('css-framework', input, result, 'css', targetLang); 
+        setData(result);
+        await saveHistory('css-framework', input, result, 'css', targetLang);
       } else {
-           console.error("Unexpected structure:", result);
-           throw new Error("AI returned an unexpected structure.");
+        console.error("Unexpected structure:", result);
+        throw new Error("AI returned an unexpected structure.");
       }
-
+      
     } catch (error) {
       alert(`Conversion failed. Error: ${error.message}`);
       console.error(error);
@@ -60,8 +52,14 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
     setLoading(false);
   };
   
+  const handleAnalyze = (snippet) => {
+    if (onSwitchModule) {
+      onSwitchModule('analysis', { input: snippet, sourceModule: 'css-framework' });
+    }
+  };
+  
   const targetLabel = TARGET_FRAMEWORKS.find(f => f.value === targetLang)?.label || 'Classes';
-
+  
   return (
     <div className="module-container">
       <header className="module-header">
@@ -108,29 +106,30 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
           {data ? (
             <div className="results-container">
               
-              {/* Display the detailed analysis */}
-              <div className="ai-summary">
-                <strong>AI Analysis:</strong> 
-                <p>{data.analysis}</p>
-              </div>
-              
-              {/* Display individual selector conversions */}
               <div className="selectors-list" style={{ flexGrow: 1, overflowY: 'auto' }}>
                 {data.conversions.map((item, idx) => (
                   <div key={idx} className="selector-card">
                     <div className="selector-name">{item.selector}</div>
                     <div className="tailwind-code">
-                      <pre>
-                        {item.tailwindClasses}
-                      </pre>
-                      <button 
-                        className="primary-button copy-btn"
-                        onClick={() => navigator.clipboard.writeText(item.tailwindClasses)}
-                      >
-                       Copy
-                      </button>
+                      <pre>{item.tailwindClasses}</pre>
+                      
+                      {/* Action Buttons */}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                        <button 
+                          className="primary-button copy-btn"
+                          onClick={() => navigator.clipboard.writeText(item.tailwindClasses)}
+                        >
+                          Copy
+                        </button>
+                        <button 
+                          className="primary-button"
+                          style={{ backgroundColor: '#2d3748', border: '1px solid #4a5568' }}
+                          onClick={() => handleAnalyze(item.tailwindClasses)}
+                        >
+                          Analyze
+                        </button>
+                      </div>
                     </div>
-                    <p className="explanation">{item.explanation}</p>
                   </div>
                 ))}
               </div>

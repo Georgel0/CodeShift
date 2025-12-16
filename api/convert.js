@@ -1,133 +1,76 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = process.env.GEMINI_API_KEY;
+const API_KEY = "GEMINI_API_KEY"; // Ensure this is securely managed
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+// Helper for retry delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  const { type, code, sourceLang, targetLang } = req.body; // Destructure all required params
+export async function convertCode(type, input, sourceLang, targetLang) {
+  let prompt = "";
 
-  if (!API_KEY) {
-    return res.status(500).json({ error: 'Server key not configured.' });
-  }
-
-  const genAI = new GoogleGenerativeAI(API_KEY);
-  
-  const modelName = "gemini-2.5-flash";
-
-  let systemInstruction = "";
-  let userPrompt = `Input Code:\\n${code}`;
-  
-  // JSON structures
-  const CONVERTER_JSON_STRUCTURE = `{\n    \"convertedCode\": \"string\"\n  }`;
-  
-  const ANALYSIS_JSON_STRUCTURE = `{\n    \"analysis\": \"string (A detailed, multi-paragraph explanation using Markdown for readability.)\"\n  }`;
-  
-  const GENERATOR_JSON_STRUCTURE = `{\n    \"convertedCode\": \"string\",\n    \"explanation\": \"string (Brief usage instructions.)\"\n  }`;
-  
-  // STRUCTURE FOR CSS FRAMEWORK CONVERTER
-  const CSS_FRAMEWORK_STRUCTURE = `{\n    \"analysis\": \"string\",\n    \"conversions\": [{ \"selector\": \"string\", \"tailwindClasses\": \"string\", \"explanation\": \"string\" }]\n  }`;
-
-  // GENERIC CONVERTER (For code-to-code)
+  // Optimized Low-Resource Prompts
   if (type === 'converter') {
-    if (!sourceLang || !targetLang) {
-      return res.status(400).json({ error: 'Source and target languages are required for converter type.' });
-    }
-    systemInstruction = `
-      You are an expert Polyglot Programmer. 
-      Convert the input code from ${sourceLang} to ${targetLang}.
-      
-      Rules:
-      1. Return valid, idiomatic ${targetLang} code.
-      2. Return a JSON object matching this structure: ${CONVERTER_JSON_STRUCTURE}.
-    `;
-    userPrompt = `Code to convert from ${sourceLang} to ${targetLang}:\n${code}`;
-  }
-  // CSS FRAMEWORK CONVERTER
-  else if (type === 'css-framework') {
-    if (!targetLang) {
-        return res.status(400).json({ error: 'Target language/framework is required for CSS framework conversion.' });
-    }
     
-    systemInstruction = `
-        You are an expert in CSS frameworks. Your task is to convert standard CSS properties into the equivalent format for **${targetLang}**.
-        
-        Rules:
-        1. For utility frameworks (like Tailwind or Bootstrap), the output MUST be classes and placed in the 'tailwindClasses' field.
-        2. For preprocessors (like SASS/LESS), the output MUST be the equivalent code structure.
-        3. Return a JSON object matching this structure: ${CSS_FRAMEWORK_STRUCTURE}.
-        - 'analysis': Summary of the conversion.
-        - 'conversions': Array of objects for each CSS selector.
-        - 'explanation': Brief explanation for the conversion.
-    `;
-    userPrompt = `Convert the following standard CSS into ${targetLang} format:\\n${code}`;
-  }
-  // CODE ANALYSIS
-  else if (type === 'analysis') {
-    systemInstruction = `
-      You are an expert software engineer. Analyze the provided code for complexity, potential bugs, best practices, and security flaws.
-      
-      Rules:
-      1. Use Markdown for formatting (bolding, lists, headings) to make the analysis highly readable.
-      2. Return a JSON object matching this structure: ${ANALYSIS_JSON_STRUCTURE}.
-    `;
-    userPrompt = `Code to analyze:\\n${code}`;
-  }
-  // CODE GENERATOR 
-  else if (type === 'generator') {
-    systemInstruction = `
-      You are an expert programmer. Generate code based on the user's request.
-      
-      Rules:
-      1. The generated code MUST be returned in the 'convertedCode' field.
-      2. The 'explanation' field MUST contain brief usage instructions or notes.
-      3. Return a JSON object matching this structure: ${GENERATOR_JSON_STRUCTURE}.
-    `;
-    userPrompt = `Request: ${code}`;
-  }
-  // FALLBACK FOR OLD/UNKNOWN TYPES (Kept for compatibility)
-  else if (type === 'css-to-tailwind') {
-    // Legacy: Redirect to the new logic but use default target
-    systemInstruction = `
-        You are an expert CSS to Tailwind converter.
-        Return a JSON object matching this structure: ${CSS_FRAMEWORK_STRUCTURE}.
-        - 'analysis': Summary of the conversion.
-        - 'conversions': Array of objects for each CSS selector.
-        - 'explanation': Brief explanation for the conversion.
-    `;
-    userPrompt = `Convert the following standard CSS into Tailwind format:\\n${code}`;
+    prompt = `Convert this ${sourceLang} code to ${targetLang}. Return ONLY the raw code string. No markdown formatting (e.g., \`\`\`), no comments, no explanations. Code: \n\n${input}`;
   } 
-  else {
-    // Fallback for unknown type
-    systemInstruction = `Analyze. Return JSON: { \"result\": \"Unknown module type: ${type}.\" }`;
+  else if (type === 'analysis') {
+    
+    prompt = `Analyze this code. Return a conciese and strict explanation of it that is well understandable. No intro/outro text. Code: \n\n${input}`;
+  } 
+  else if (type === 'css-framework') {
+  
+    prompt = `Convert this CSS to ${targetLang}. Return strictly a JSON object with this format: { "conversions": [{ "selector": "original_selector_name", "tailwindClasses": "converted_classes_only" }] }. Do NOT include explanations. Do NOT include any other text. CSS Input: \n\n${input}`;
   }
 
-  try {
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      systemInstruction: systemInstruction,
-      generationConfig: { responseMimeType: "application/json" }
-    });
+  // Retry Logic for 503 Errors
+  const maxRetries = 3;
+  let attempt = 0;
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: userPrompt }] }]
-    });
+  while (attempt < maxRetries) {
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let text = response.text();
 
-    const rawText = result?.response?.text();
+      // Return structured data for CSS Frameworks
+      if (type === 'css-framework') {
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("JSON Parse Error", e);
+          
+          return { error: "Failed to parse AI response as JSON.", rawResponse: text, conversions: [] };
+        }
+      }
+      
+      // For converter and analysis, return the raw text without aggressive stripping.
+      if (type === 'converter') {
+        return { convertedCode: text.trim() }; 
+      }
 
-    if (!rawText) throw new Error("Gemini returned an empty response.");
+      if (type === 'analysis') {
+        return { analysis: text.trim() };
+      }
+      
+      // Fallback
+      return { text: text.trim() };
 
-    // Clean up markdown code blocks
-    const cleanText = rawText.replace(/```json|```/g, '').trim();
-    const finalResultObject = JSON.parse(cleanText);
-
-    res.status(200).json(finalResultObject);
-
-  } catch (error) {
-    console.error("Gemini API error:", error);
-    const errorMessage = error.message || 'An unknown error occurred during API processing.';
-    res.status(500).json({ error: 'Conversion failed.', details: errorMessage });
+    } catch (error) {
+      // Check for Overload/503 errors
+      const isOverloaded = error.message.includes('503') || error.message.includes('overloaded');
+      
+      if (isOverloaded && attempt < maxRetries - 1) {
+        attempt++;
+        const waitTime = 1000 * Math.pow(2, attempt);
+        console.warn(`Model overloaded (503). Retrying in ${waitTime}ms...`);
+        await delay(waitTime);
+        continue; // Retry the loop
+      }
+      
+      throw error;
+    }
   }
 }
