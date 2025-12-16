@@ -1,72 +1,83 @@
+import Groq from "groq-sdk";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Helper to strip markdown code fences
-const stripCodeFences = (text) => {
-    return text.replace(/^```[a-zA-Z]*\s*|```$/g, '').trim();
-};
-
-// Main Vercel Serverless Handler
 export default async function handler(req, res) {
-  // Only allow POST requests
+  // 1. Basic Setup
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // Check API Key
-  const API_KEY = process.env.GEMINI_API_KEY;
+  const API_KEY = process.env.GROQ_API_KEY;
   if (!API_KEY) {
-    return res.status(500).json({ error: "Server Error: GEMINI_API_KEY is missing in Vercel Environment Variables." });
+    return res.status(500).json({ error: "Server Error: GROQ_API_KEY is missing." });
+  }
+
+  const { type, input, sourceLang, targetLang } = req.body;
+
+  // 2. Initialize Groq
+  const groq = new Groq({ apiKey: API_KEY });
+
+  // 3. Construct the Prompt
+  let systemMessage = "";
+  let userMessage = "";
+
+  if (type === 'converter') {
+    systemMessage = "You are a code conversion engine. Output ONLY the raw code string. Do not use Markdown backticks (```). Do not add explanations. Do not add comments unless they existed in the source.";
+    userMessage = `Convert this ${sourceLang} code to ${targetLang}:\n\n${input}`;
+  } 
+  else if (type === 'analysis') {
+    systemMessage = "You are a senior code reviewer. Analyze the code concisely. Use HTML formatting (<br>, <strong>) for readability if needed, but do not use Markdown.";
+    userMessage = `Analyze this code:\n\n${input}`;
+  } 
+  else if (type === 'css-framework') {
+    systemMessage = `You are a CSS to Framework converter. You must return strictly valid JSON. 
+    The format must be: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. 
+    Do not output markdown or backticks.`;
+    userMessage = `Convert this CSS to ${targetLang}:\n\n${input}`;
   }
 
   try {
-    // Parse the incoming data from the frontend
-    const { type, input, sourceLang, targetLang } = req.body;
+    // 4. Call the API (Llama 3 via Groq)
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemMessage },
+        { role: "user", content: userMessage },
+      ],
+      model: "llama-3.3-70b-versatile", // Powerful, fast, and currently free
+      temperature: 0.1, // Low temperature for consistent code results
+    });
 
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    let text = completion.choices[0]?.message?.content || "";
 
-    let prompt = "";
+    // 5. Clean and Format the Output
+    // Strip markdown if the AI adds it despite instructions
+    text = text.replace(/^```json/g, '').replace(/^```/g, '').trim();
 
-    if (type === 'converter') {
-      prompt = `Convert this ${sourceLang} code to ${targetLang}. Return ONLY the raw code string. No markdown formatting (e.g., \`\`\`), no comments, no explanations. Code: \n\n${input}`;
-    } 
-    else if (type === 'analysis') {
-      prompt = `Analyze this code. Return a conciese and strict explanation of it that is well understandable. No intro/outro text. Code: \n\n${input}`;
-    } 
-    else if (type === 'css-framework') {
-      prompt = `Convert this CSS to ${targetLang}. Return strictly a JSON object with this format: { "conversions": [{ "selector": "original_selector_name", "tailwindClasses": "converted_classes_only" }] }. Do NOT include explanations. Do NOT include any other text. CSS Input: \n\n${input}`;
-    }
-
-    // Call Gemini API
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
-
-    // Process output based on type
     let finalResponse = {};
 
     if (type === 'css-framework') {
-      text = text.replace(/```json/g, '').replace(/```/g, '').trim();
       try {
         finalResponse = JSON.parse(text);
       } catch (e) {
         console.error("JSON Parse Error", e);
-        return res.status(500).json({ error: "Failed to parse AI response as JSON.", rawResponse: text });
+        // Fallback: try to find JSON object inside text if it failed
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try { finalResponse = JSON.parse(jsonMatch[0]); }
+            catch(err) { throw new Error("AI did not return valid JSON"); }
+        } else {
+            throw new Error("AI did not return valid JSON");
+        }
       }
     } else if (type === 'converter') {
-      finalResponse = { convertedCode: stripCodeFences(text) }; 
+      finalResponse = { convertedCode: text }; 
     } else if (type === 'analysis') {
-      finalResponse = { analysis: stripCodeFences(text) };
-    } else {
-      finalResponse = { text: text.trim() };
+      finalResponse = { analysis: text };
     }
 
-    // Send success response back to frontend
     return res.status(200).json(finalResponse);
 
   } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ error: error.message || "Internal Server Error" });
+    console.error("Groq API Error:", error);
+    return res.status(500).json({ error: "AI Processing Failed: " + error.message });
   }
 }
