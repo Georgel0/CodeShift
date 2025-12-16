@@ -1,12 +1,24 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = process.env.GEMINI_API_KEY; 
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+// Helper for retry delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Helper to strip markdown code fences
+const stripCodeFences = (text) => {
+    return text.replace(/^```[a-zA-Z]*\s*|```$/g, '').trim();
+};
+
 export async function convertCode(type, input, sourceLang, targetLang) {
+  // 1. Check API Key inside the function to prevent top-level crashes
+  const API_KEY = process.env.GEMINI_API_KEY;
+  if (!API_KEY) {
+    throw new Error("Server Error: GEMINI_API_KEY is missing in Vercel Environment Variables.");
+  }
+
+  // 2. Initialize Model inside the function
+  const genAI = new GoogleGenerativeAI(API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
   let prompt = "";
 
   if (type === 'converter') {
@@ -39,11 +51,11 @@ export async function convertCode(type, input, sourceLang, targetLang) {
       }
       
       if (type === 'converter') {
-        return { convertedCode: text.trim() }; 
+        return { convertedCode: stripCodeFences(text) }; 
       }
 
       if (type === 'analysis') {
-        return { analysis: text.trim() };
+        return { analysis: stripCodeFences(text) };
       }
       
       return { text: text.trim() };
@@ -59,6 +71,7 @@ export async function convertCode(type, input, sourceLang, targetLang) {
         continue; 
       }
       
+      // If we run out of retries or hit a different error
       throw error;
     }
   }
