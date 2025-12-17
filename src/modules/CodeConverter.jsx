@@ -14,6 +14,7 @@ const LANGUAGES = [
   { value: 'rust', label: 'Rust' },
   { value: 'php', label: 'PHP' },
   { value: 'swift', label: 'Swift' },
+  { value: 'c', label: 'C'},
 ];
 export default function CodeConverter({ onLoadData, onSwitchModule }) {
   const [sourceLang, setSourceLang] = useState('javascript');
