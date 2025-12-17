@@ -1,7 +1,6 @@
 import Groq from "groq-sdk";
 
 export default async function handler(req, res) {
-  // 1. Basic Setup
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -12,54 +11,51 @@ export default async function handler(req, res) {
   }
 
   const { type, input, sourceLang, targetLang } = req.body;
-
-  // 2. Initialize Groq
   const groq = new Groq({ apiKey: API_KEY });
 
-  // 3. Construct the Prompt
   let systemMessage = "";
   let userMessage = "";
-
+  
+  // DEFINING PROMPTS
   if (type === 'converter') {
-    systemMessage = "You are a code conversion engine. Output ONLY the raw code string. Do not use Markdown backticks (```). Do not add explanations. Do not add comments unless they existed in the source.";
+    systemMessage = "You are a code conversion engine. Output ONLY the raw code string. No markdown backticks. No explanations.";
     userMessage = `Convert this ${sourceLang} code to ${targetLang}:\n\n${input}`;
   } 
+  else if (type === 'generator') { 
+    systemMessage = "You are an expert code generator. Return ONLY the raw code. Do not use Markdown backticks. Do not add explanations or wrapper text.";
+    userMessage = `Write code for the following request:\n\n${input}`;
+  }
   else if (type === 'analysis') {
     systemMessage = "You are a senior code reviewer. Analyze the code concisely. Use HTML formatting (<br>, <strong>) for readability if needed, but do not use Markdown.";
     userMessage = `Analyze this code:\n\n${input}`;
   } 
   else if (type === 'css-framework') {
-    systemMessage = `You are a CSS to Framework converter. You must return strictly valid JSON. 
-    The format must be: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. 
-    Do not output markdown or backticks.`;
+    systemMessage = `You are a CSS to Framework converter. Return strictly valid JSON: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. No markdown.`;
     userMessage = `Convert this CSS to ${targetLang}:\n\n${input}`;
   }
 
   try {
-    // 4. Call the API (Llama 3 via Groq)
     const completion = await groq.chat.completions.create({
       messages: [
         { role: "system", content: systemMessage },
         { role: "user", content: userMessage },
       ],
-      model: "llama-3.3-70b-versatile", // Powerful, fast, and currently free
-      temperature: 0.1, // Low temperature for consistent code results
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.1,
     });
 
     let text = completion.choices[0]?.message?.content || "";
-
-    // 5. Clean and Format the Output
-    // Strip markdown if the AI adds it despite instructions
-    text = text.replace(/^```json/g, '').replace(/^```/g, '').trim();
+    // Strip markdown formatting
+    text = text.replace(/^```[a-z]*\s*|```$/g, '').trim();
 
     let finalResponse = {};
 
+    // FORMING RESPONSES
     if (type === 'css-framework') {
       try {
         finalResponse = JSON.parse(text);
       } catch (e) {
-        console.error("JSON Parse Error", e);
-        // Fallback: try to find JSON object inside text if it failed
+        // Fallback for partial JSON matches
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try { finalResponse = JSON.parse(jsonMatch[0]); }
@@ -68,9 +64,12 @@ export default async function handler(req, res) {
             throw new Error("AI did not return valid JSON");
         }
       }
-    } else if (type === 'converter') {
+    } 
+    // Handle both converter and generator with the same structure
+    else if (type === 'converter' || type === 'generator') {
       finalResponse = { convertedCode: text }; 
-    } else if (type === 'analysis') {
+    } 
+    else if (type === 'analysis') {
       finalResponse = { analysis: text };
     }
 

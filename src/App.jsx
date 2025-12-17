@@ -5,6 +5,7 @@ import CodeAnalysis from './modules/CodeAnalysis';
 import CssFrameworkConverter from './modules/CssFrameworkConverter'; 
 import PlaceholderModule from './modules/PlaceholderModules'; 
 import Notification from './components/Notification';
+import CodeGenerator from './modules/CodeGenerator'; 
 import './index.css';
 import { useTheme } from './components/ThemeContext';
 import { initializeAuth } from './services/firebase';
@@ -62,7 +63,7 @@ function App() {
                />;
       // Temporary placeholders for in-progress modules
       case 'generator':
-        return <PlaceholderModule title="Code Generator" icon="fas fa-magic" type="generator" onLoadData={moduleData} />;
+        return <CodeGenerator onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
       case 'regex':
         return <PlaceholderModule title="Regex Generator" icon="fas fa-search" />;
       case 'sql':
