@@ -15,7 +15,7 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
   const [targetLang, setTargetLang] = useState(preSetTarget);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   // Load data from history or preSetTarget on component mount/update
   useEffect(() => {
     if (onLoadData) {
@@ -28,15 +28,15 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
       setData(null);
     }
   }, [onLoadData, preSetTarget]);
-  
+
   const handleConvert = async () => {
     if (!input.trim()) return;
     setLoading(true);
     setData(null);
-    
+
     try {
       const result = await convertCode('css-framework', input, 'css', targetLang);
-      
+
       if (result && result.conversions) {
         setData(result);
         await saveHistory('css-framework', input, result, 'css', targetLang);
@@ -59,7 +59,7 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
   };
   
   const targetLabel = TARGET_FRAMEWORKS.find(f => f.value === targetLang)?.label || 'Classes';
-  
+
   return (
     <div className="module-container">
       <header className="module-header">
@@ -75,20 +75,22 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
             onChange={(e) => setInput(e.target.value)} 
             placeholder=".btn { padding: 10px 20px; border-radius: 4px; color: white; }" 
             spellCheck="false"
-            style={{ flexGrow: 1 }}
+            className="flex-grow"
           />
-          <button 
-            className="primary-button action-btn" 
-            onClick={handleConvert} 
-            disabled={loading || !input.trim()}
-          >
-            {loading ? 'Converting...' : `Convert to ${targetLabel}`}
-          </button>
+          <div className="action-row">
+            <button 
+                className="primary-button action-btn" 
+                onClick={handleConvert} 
+                disabled={loading || !input.trim()}
+            >
+                {loading ? 'Converting...' : `Convert to ${targetLabel}`}
+            </button>
+          </div>
         </div>
 
         {/* Output Column */}
         <div className="panel output-panel">
-          <div className="selector-bar" style={{ marginBottom: '1rem' }}>
+          <div className="selector-bar">
             <h3>Output:</h3>
             <select
               value={targetLang}
@@ -105,37 +107,35 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
           
           {data ? (
             <div className="results-container">
-              
-              <div className="selectors-list" style={{ flexGrow: 1, overflowY: 'auto' }}>
+              <div className="selectors-list">
                 {data.conversions.map((item, idx) => (
                   <div key={idx} className="selector-card">
                     <div className="selector-name">{item.selector}</div>
                     <div className="tailwind-code">
-                      <pre>{item.tailwindClasses}</pre>
+                      <pre className="code-pre">{item.tailwindClasses}</pre>
+                    </div>
                       
-                      {/* Action Buttons */}
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                        <button 
-                          className="primary-button copy-btn"
-                          onClick={() => navigator.clipboard.writeText(item.tailwindClasses)}
-                        >
-                          Copy
-                        </button>
-                        <button 
-                          className="primary-button"
-                          style={{ backgroundColor: '#2d3748', border: '1px solid #4a5568' }}
-                          onClick={() => handleAnalyze(item.tailwindClasses)}
-                        >
-                          Analyze
-                        </button>
-                      </div>
+                    {/* Action Buttons */}
+                    <div className="card-actions">
+                    <button 
+                        className="primary-button copy-btn"
+                        onClick={() => navigator.clipboard.writeText(item.tailwindClasses)}
+                    >
+                        Copy
+                    </button>
+                    <button 
+                        className="primary-button secondary-action-btn"
+                        onClick={() => handleAnalyze(item.tailwindClasses)}
+                    >
+                        Analyze
+                    </button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="placeholder-text" style={{ flexGrow: 1 }}>
+            <div className="placeholder-text">
               {loading ? 'Analyzing and converting...' : 'Output will appear here...'}
             </div>
           )}

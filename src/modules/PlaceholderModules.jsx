@@ -6,11 +6,11 @@ export default function PlaceholderModule({ title, icon }) {
       <header className="module-header">
         <h1>{title}</h1>
       </header>
-      <div className="converter-grid" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <div className="panel" style={{ textAlign: 'center', padding: '3rem', maxWidth: '500px' }}>
-            <i className={icon} style={{ fontSize: '4rem', marginBottom: '1.5rem', color: 'var(--accent)' }}></i>
+      <div className="converter-grid placeholder-container">
+        <div className="panel placeholder-panel">
+            <i className={`${icon} placeholder-icon`}></i>
             <h2>Coming Soon</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+            <p className="placeholder-message">
                 The <strong>{title}</strong> module is currently under development. <br/>
                 Check back later for updates!
             </p>

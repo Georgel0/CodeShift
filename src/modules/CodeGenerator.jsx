@@ -11,7 +11,7 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
   useEffect(() => {
     if (onLoadData) {
       setInput(onLoadData.input || '');
-      // Handle loading from history (structure depends on how it was saved)
+      // Handle loading from history
       const savedOutput = onLoadData.fullOutput?.convertedCode || onLoadData.fullOutput?.text || '';
       setOutputCode(savedOutput);
     }
@@ -21,12 +21,8 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
     if (!input.trim()) return;
     setLoading(true);
     setOutputCode('');
-
     try {
-      // Call API with type 'generator'
       const result = await convertCode('generator', input);
-
-      // Handle success (expecting convertedCode from our updated backend)
       if (result && result.convertedCode) {
         setOutputCode(result.convertedCode);
         await saveHistory('generator', input, result);
@@ -55,15 +51,17 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
             onChange={(e) => setInput(e.target.value)} 
             placeholder="E.g., Write a Python script to scrape weather data from a website..." 
             spellCheck="false"
-            style={{ flexGrow: 1 }}
+            className="flex-grow"
           />
-          <button 
-            className="primary-button action-btn" 
-            onClick={handleGenerate} 
-            disabled={loading || !input.trim()}
-          >
-            {loading ? 'Generating...' : 'Generate Code'}
-          </button>
+          <div className="action-row">
+            <button 
+                className="primary-button action-btn" 
+                onClick={handleGenerate} 
+                disabled={loading || !input.trim()}
+            >
+                {loading ? 'Generating...' : 'Generate Code'}
+            </button>
+          </div>
         </div>
 
         {/* Output Panel */}
@@ -71,26 +69,25 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
           <h3>Generated Code</h3>
           <div className="results-container">
             {outputCode ? (
-              <div style={{ position: 'relative', flex: 1, display: 'flex' }}> 
-                <div className="selector-card" style={{ width: '100%', margin: 0, display: 'flex', flexDirection: 'column' }}>
-                    <div className="tailwind-code" style={{ flex: 1 }}>
-                        <pre style={{ whiteSpace: 'pre-wrap' }}>{outputCode}</pre>
-                        
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                             <button 
-                                className="primary-button copy-btn" 
-                                onClick={() => navigator.clipboard.writeText(outputCode)}
-                            >
-                                Copy
-                            </button>
-                            <button 
-                                className="primary-button" 
-                                style={{ backgroundColor: '#2d3748', border: '1px solid #4a5568' }}
-                                onClick={() => onSwitchModule('analysis', { input: outputCode, sourceModule: 'generator' })}
-                            >
-                                Analyze This
-                            </button>
-                        </div>
+              <div className="flex-grow" style={{ display: 'flex' }}> 
+                <div className="selector-card flex-grow" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
+                    <div className="tailwind-code flex-grow" style={{ alignItems: 'flex-start' }}>
+                        <pre className="code-pre">{outputCode}</pre>
+                    </div>
+                    
+                    <div className="card-actions">
+                        <button 
+                            className="primary-button copy-btn" 
+                            onClick={() => navigator.clipboard.writeText(outputCode)}
+                        >
+                            Copy
+                        </button>
+                        <button 
+                            className="primary-button secondary-action-btn" 
+                            onClick={() => onSwitchModule('analysis', { input: outputCode, sourceModule: 'generator' })}
+                        >
+                            Analyze This
+                        </button>
                     </div>
                 </div>
               </div>

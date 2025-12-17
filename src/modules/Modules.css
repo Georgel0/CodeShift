@@ -12,13 +12,16 @@
 }
 
 .module-header h1 {
-  color: var(--header-color); 
+  color: var(--header-color);
   background: var(--header-color);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
   margin-bottom: 0.25rem;
   font-size: 1.8rem;
+}
+
+.module-description {
+  color: var(--text-secondary);
 }
 
 .converter-grid {
@@ -41,12 +44,11 @@
 
 .panel h3 {
   margin-top: 0;
-  color: var(--header-color); 
+  color: var(--header-color);
   background: var(--header-color);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
-  border-bottom: 1px solid var(--bg-tertiary); 
+  border-bottom: 1px solid var(--bg-tertiary);
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
   font-weight: 600;
@@ -54,13 +56,12 @@
 
 .theme-dark-black-gold .panel h3,
 .theme-light-quartz .panel h3 {
-  border-bottom: 1px solid transparent; 
+  border-bottom: 1px solid transparent;
   border-image: var(--gradient-gold) 1;
   border-image-slice: 1;
   border-style: solid;
   border-width: 0 0 1px 0;
 }
-
 
 textarea {
   flex: 1;
@@ -89,9 +90,6 @@ textarea:focus {
   margin-top: 1.5rem;
 }
 
-.action-row button {
-}
-
 .placeholder-text {
   flex: 1;
   display: flex;
@@ -116,14 +114,14 @@ textarea:focus {
   padding: 1rem;
   line-height: 1.6;
   border-radius: var(--radius);
+  overflow-y: auto;
 }
 
 .ai-summary strong {
-  color: var(--header-color); 
+  color: var(--header-color);
   background: var(--header-color);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -132,6 +130,8 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 .selector-card {
@@ -139,6 +139,10 @@ textarea:focus {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
+}
+
+.selector-bar {
+  margin-bottom: 1rem;
 }
 
 .selector-name {
@@ -167,12 +171,14 @@ textarea:focus {
   border-width: 1px;
 }
 
-
-.tailwind-code code {
-  color: var(--accent); 
+.tailwind-code code,
+.code-pre {
+  color: var(--accent);
   font-family: monospace;
   word-break: break-all;
+  white-space: pre-wrap;
   flex-grow: 1;
+  margin: 0;
 }
 
 .copy-btn {
@@ -188,48 +194,51 @@ textarea:focus {
   background: var(--accent-hover);
 }
 
+.secondary-action-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .theme-dark-black-gold .copy-btn,
 .theme-light-quartz .copy-btn {
   background: var(--btn-background);
   color: var(--text-on-accent);
 }
 
-.theme-dark-black-gold .copy-btn:hover::after,
-.theme-light-quartz .copy-btn:hover::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -200%;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(
-        to right, 
-        rgba(255, 255, 255, 0) 0%, 
-        rgba(255, 255, 255, 0.3) 50%, 
-        rgba(255, 255, 255, 0) 100%
-    );
-    transform: skewX(-20deg);
-    animation: glint 1s forwards;
-    z-index: 2;
+.placeholder-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
 }
 
-.explanation {
-  font-size: 0.85rem;
+.placeholder-panel {
+  text-align: center;
+  padding: 3rem;
+  max-width: 500px;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: var(--accent);
+}
+
+.placeholder-message {
   color: var(--text-secondary);
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  font-size: 1.1rem;
 }
 
-.theme-dark-black-gold .explanation,
-.theme-light-quartz .explanation {
-  border-top: 1px solid transparent;
-  border-image: var(--gradient-gold) 1;
-  border-image-slice: 1;
-  border-style: solid;
-  border-width: 1px 0 0 0;
+.flex-grow {
+  flex-grow: 1;
 }
-
 
 @media (max-width: 768px) {
   .converter-grid {
