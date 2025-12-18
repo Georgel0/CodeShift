@@ -8,13 +8,13 @@ const LANGUAGES = [
   { value: 'typescript', 'label': 'TypeScript' },
   { value: 'python', label: 'Python' },
   { value: 'java', label: 'Java' },
+  { value: 'c', label: 'C'},
   { value: 'csharp', label: 'C#' },
   { value: 'cpp', label: 'C++' },
   { value: 'go', label: 'Go' },
   { value: 'rust', label: 'Rust' },
   { value: 'php', label: 'PHP' },
   { value: 'swift', label: 'Swift' },
-  { value: 'c', label: 'C'},
 ];
 export default function CodeConverter({ onLoadData, onSwitchModule }) {
   const [sourceLang, setSourceLang] = useState('javascript');
