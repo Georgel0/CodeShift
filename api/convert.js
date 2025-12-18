@@ -33,6 +33,18 @@ export default async function handler(req, res) {
     systemMessage = `You are a CSS to Framework converter. Return strictly valid JSON: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. No markdown.`;
     userMessage = `Convert this CSS to ${targetLang}:\n\n${input}`;
   }
+  else if (type === 'regex') {
+    systemMessage = "You are a Regular Expression generator. Return ONLY the raw regex pattern. No markdown, no explanations.";
+    userMessage = `Create a regex for this requirement:\n\n${input}`;
+  }
+  else if (type === 'sql') {
+    systemMessage = "You are a SQL query builder. Return ONLY the raw SQL query. No markdown, no explanations.";
+    userMessage = `Dialect: ${targetLang || 'Standard SQL'}\nRequirement: ${input}`;
+  }
+  else if (type === 'json') {
+     systemMessage = "You are a JSON validator and formatter. Repair any syntax errors, remove comments if present, and format the JSON. Return ONLY the raw valid JSON string.";
+     userMessage = `Fix and format this JSON:\n\n${input}`;
+  }
 
   try {
     const completion = await groq.chat.completions.create({
@@ -65,8 +77,8 @@ export default async function handler(req, res) {
         }
       }
     } 
-    // Handle both converter and generator with the same structure
-    else if (type === 'converter' || type === 'generator') {
+    // Handle text-based outputs (Converter, Generator, Regex, SQL, JSON)
+    else if (['converter', 'generator', 'regex', 'sql', 'json'].includes(type)) {
       finalResponse = { convertedCode: text }; 
     } 
     else if (type === 'analysis') {

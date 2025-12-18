@@ -3,9 +3,12 @@ import Sidebar from './components/Sidebar';
 import CodeConverter from './modules/CodeConverter';
 import CodeAnalysis from './modules/CodeAnalysis';
 import CssFrameworkConverter from './modules/CssFrameworkConverter'; 
-import PlaceholderModule from './modules/PlaceholderModules'; 
 import Notification from './components/Notification';
 import CodeGenerator from './modules/CodeGenerator'; 
+import RegexGenerator from './modules/RegexGenerator';
+import SqlBuilder from './modules/SqlBuilder';
+import JsonFormatter from './modules/JsonFormatter';
+
 import './index.css';
 import { useTheme } from './components/ThemeContext';
 import { initializeAuth } from './services/firebase';
@@ -43,7 +46,13 @@ function App() {
         targetModule = 'analysis';
     } else if (historyItem.type === 'generator') {
         targetModule = 'generator';
-    } 
+    } else if (historyItem.type === 'regex') {
+        targetModule = 'regex';
+    } else if (historyItem.type === 'sql') {
+        targetModule = 'sql';
+    } else if (historyItem.type === 'json') {
+        targetModule = 'json';
+    }
     
     handleModuleSwitch(targetModule, historyItem);
     setNotificationMessage(`History loaded: ${historyItem.type} conversion.`);
@@ -61,15 +70,16 @@ function App() {
                   preSetTarget="tailwind" 
                   onSwitchModule={handleModuleSwitch} 
                />;
-      // Temporary placeholders for in-progress modules
       case 'generator':
         return <CodeGenerator onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
+        
       case 'regex':
-        return <PlaceholderModule title="Regex Generator" icon="fas fa-search" />;
+        return <RegexGenerator onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
       case 'sql':
-        return <PlaceholderModule title="SQL Builder" icon="fas fa-database" />;
+        return <SqlBuilder onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
       case 'json':
-        return <PlaceholderModule title="JSON Formatter" icon="fas fa-list-alt" />;
+        return <JsonFormatter onLoadData={moduleData} onSwitchModule={handleModuleSwitch} />;
+        
       default:
         return <CodeConverter />;
     }
