@@ -16,7 +16,6 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Load data from history or preSetTarget on component mount/update
   useEffect(() => {
     if (onLoadData) {
       setInput(onLoadData.input || '');
@@ -36,71 +35,52 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
 
     try {
       const result = await convertCode('css-framework', input, 'css', targetLang);
-
       if (result && result.conversions) {
         setData(result);
         await saveHistory('css-framework', input, result, 'css', targetLang);
-      } else {
-        console.error("Unexpected structure:", result);
-        throw new Error("AI returned an unexpected structure.");
       }
-      
     } catch (error) {
-      alert(`Conversion failed. Error: ${error.message}`);
-      console.error(error);
+      console.error("Conversion failed:", error);
     }
     setLoading(false);
   };
-  
+
   const handleAnalyze = (snippet) => {
     if (onSwitchModule) {
       onSwitchModule('analysis', { input: snippet, sourceModule: 'css-framework' });
     }
   };
-  
+
   const targetLabel = TARGET_FRAMEWORKS.find(f => f.value === targetLang)?.label || 'Classes';
 
   return (
     <div className="module-container">
       <header className="module-header">
         <h1>CSS Framework Converter</h1>
-        <p className="module-description">Convert standard CSS into a utility framework or preprocessor format.</p>
       </header>
+
       <div className="converter-grid">
-        {/* Input Column */}
         <div className="panel input-panel">
           <h3>Input: Standard CSS</h3>
           <textarea 
-            value={input} 
+            value={input}
             onChange={(e) => setInput(e.target.value)} 
-            placeholder=".btn { padding: 10px 20px; border-radius: 4px; color: white; }" 
-            spellCheck="false"
+            placeholder=".btn { color: red; }" 
             className="flex-grow"
           />
           <div className="action-row">
-            <button 
-                className="primary-button action-btn" 
-                onClick={handleConvert} 
-                disabled={loading || !input.trim()}
-            >
-                {loading ? 'Converting...' : `Convert to ${targetLabel}`}
+            <button className="primary-button" onClick={handleConvert} disabled={loading}>
+              {loading ? 'Converting...' : `Convert to ${targetLabel}`}
             </button>
           </div>
         </div>
 
-        {/* Output Column */}
         <div className="panel output-panel">
           <div className="selector-bar">
             <h3>Output:</h3>
-            <select
-              value={targetLang}
-              onChange={(e) => setTargetLang(e.target.value)}
-              className="lang-select"
-            >
+            <select value={targetLang} onChange={(e) => setTargetLang(e.target.value)}>
               {TARGET_FRAMEWORKS.map(lang => (
-                <option key={lang.value} value={lang.value}>
-                  {lang.label}
-                </option>
+                <option key={lang.value} value={lang.value}>{lang.label}</option>
               ))}
             </select>
           </div>
@@ -108,37 +88,24 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
           {data ? (
             <div className="results-container">
               <div className="selectors-list">
-                {data.conversions.map((item, idx) => (
-                  <div key={idx} className="selector-card">
-                    <div className="selector-name">{item.selector}</div>
-                    <div className="tailwind-code">
-                      <pre className="code-pre">{item.tailwindClasses}</pre>
+                {data.conversions.map((item, idx) => {
+                  const displayCode = item.convertedCode || item.tailwindClasses || "";
+                  return (
+                    <div key={idx} className="selector-card">
+                      <div className="selector-name">{item.selector}</div>
+                      <div className="code-result-box">
+                        <pre className="code-pre">{displayCode}</pre>
+                      </div>
+                      <div className="card-actions">
+                        <button onClick={() => navigator.clipboard.writeText(displayCode)}>Copy</button>
+                        <button onClick={() => handleAnalyze(displayCode)}>Analyze</button>
+                      </div>
                     </div>
-                      
-                    {/* Action Buttons */}
-                    <div className="card-actions">
-                    <button 
-                        className="primary-button copy-btn"
-                        onClick={() => navigator.clipboard.writeText(item.tailwindClasses)}
-                    >
-                        Copy
-                    </button>
-                    <button 
-                        className="primary-button secondary-action-btn"
-                        onClick={() => handleAnalyze(item.tailwindClasses)}
-                    >
-                        Analyze
-                    </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
-          ) : (
-            <div className="placeholder-text">
-              {loading ? 'Analyzing and converting...' : 'Output will appear here...'}
-            </div>
-          )}
+          ) : <div className="placeholder-text">{loading ? 'Converting...' : 'Output will appear here...'}</div>}
         </div>
       </div>
     </div>

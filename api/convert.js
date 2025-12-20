@@ -16,7 +16,6 @@ export default async function handler(req, res) {
   let systemMessage = "";
   let userMessage = "";
   
-  // DEFINING PROMPTS
   if (type === 'converter') {
     systemMessage = "You are a code conversion engine. Output ONLY the raw code string. No markdown backticks. No explanations.";
     userMessage = `Convert this ${sourceLang} code to ${targetLang}:\n\n${input}`;
@@ -30,7 +29,7 @@ export default async function handler(req, res) {
     userMessage = `Analyze this code:\n\n${input}`;
   } 
   else if (type === 'css-framework') {
-    systemMessage = `You are a CSS to Framework converter. Return strictly valid JSON: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. No markdown.`;
+    systemMessage = `You are a CSS to ${targetLang} converter. Return strictly valid JSON: { "conversions": [{ "selector": "css selector name", "convertedCode": "the ${targetLang} result" }] }. No markdown. No explanations.`;
     userMessage = `Convert this CSS to ${targetLang}:\n\n${input}`;
   }
   else if (type === 'regex') {
@@ -42,7 +41,7 @@ export default async function handler(req, res) {
     userMessage = `Dialect: ${targetLang || 'Standard SQL'}\nRequirement: ${input}`;
   }
   else if (type === 'json') {
-     systemMessage = "You are a JSON validator and formatter. Repair any syntax errors, remove comments if present, and format the JSON. Return ONLY the raw valid JSON string.";
+     systemMessage = "You are a JSON validator and formatter. Return ONLY the raw valid JSON string.";
      userMessage = `Fix and format this JSON:\n\n${input}`;
   }
 
@@ -57,17 +56,14 @@ export default async function handler(req, res) {
     });
 
     let text = completion.choices[0]?.message?.content || "";
-    // Strip markdown formatting
     text = text.replace(/^```[a-z]*\s*|```$/g, '').trim();
 
     let finalResponse = {};
 
-    // FORMING RESPONSES
     if (type === 'css-framework') {
       try {
         finalResponse = JSON.parse(text);
       } catch (e) {
-        // Fallback for partial JSON matches
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try { finalResponse = JSON.parse(jsonMatch[0]); }
@@ -77,7 +73,6 @@ export default async function handler(req, res) {
         }
       }
     } 
-    // Handle text-based outputs (Converter, Generator, Regex, SQL, JSON)
     else if (['converter', 'generator', 'regex', 'sql', 'json'].includes(type)) {
       finalResponse = { convertedCode: text }; 
     } 

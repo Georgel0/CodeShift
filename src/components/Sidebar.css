@@ -198,6 +198,29 @@
   flex-shrink: 0;
 }
 
+.history-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.delete-all-btn {
+  background: transparent;
+  border: none;
+  color: #ff4d4d; 
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.2s;
+}
+
+.delete-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
 .history-card:hover .delete-item-btn {
   opacity: 1;
 }
