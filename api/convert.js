@@ -30,8 +30,15 @@ export default async function handler(req, res) {
     userMessage = `Analyze this code:\n\n${input}`;
   } 
   else if (type === 'css-framework') {
-    systemMessage = `You are a CSS to Framework converter. Return strictly valid JSON: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. No markdown.`;
-    userMessage = `Convert this CSS to ${targetLang}:\n\n${input}`;
+    if (targetLang === 'tailwind') {
+        // Tailwind specific: Split by selectors for the UI cards
+        systemMessage = `You are a CSS to Tailwind converter. Return strictly valid JSON: { "conversions": [{ "selector": "name", "tailwindClasses": "class names" }] }. No markdown.`;
+        userMessage = `Convert this CSS to Tailwind:\n\n${input}`;
+    } else {
+        // Bootstrap, SASS, LESS: Return raw code block
+        systemMessage = `You are a CSS to ${targetLang} converter. Output ONLY the raw converted code. No markdown backticks. No explanations.`;
+        userMessage = `Convert this CSS to ${targetLang}:\n\n${input}`;
+    }
   }
   else if (type === 'regex') {
     systemMessage = "You are a Regular Expression generator. Return ONLY the raw regex pattern. No markdown, no explanations.";
@@ -64,17 +71,22 @@ export default async function handler(req, res) {
 
     // FORMING RESPONSES
     if (type === 'css-framework') {
-      try {
-        finalResponse = JSON.parse(text);
-      } catch (e) {
-        // Fallback for partial JSON matches
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            try { finalResponse = JSON.parse(jsonMatch[0]); }
-            catch(err) { throw new Error("AI did not return valid JSON"); }
-        } else {
-            throw new Error("AI did not return valid JSON");
-        }
+      if (targetLang === 'tailwind') {
+          try {
+            finalResponse = JSON.parse(text);
+          } catch (e) {
+            // Fallback for partial JSON matches
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                try { finalResponse = JSON.parse(jsonMatch[0]); }
+                catch(err) { throw new Error("AI did not return valid JSON"); }
+            } else {
+                throw new Error("AI did not return valid JSON");
+            }
+          }
+      } else {
+          // For Bootstrap/SASS/LESS, treating it like a normal conversion
+          finalResponse = { convertedCode: text };
       }
     } 
     // Handle text-based outputs (Converter, Generator, Regex, SQL, JSON)

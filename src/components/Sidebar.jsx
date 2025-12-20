@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getHistory, deleteHistoryItem, cleanupOldHistory } from '../services/firebase';
+import { getHistory, deleteHistoryItem, cleanupOldHistory, clearAllHistory } from '../services/firebase';
 import './Sidebar.css';
 import { useTheme } from './ThemeContext';
 
@@ -9,7 +9,6 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   const { currentTheme, changeTheme, groupedThemes } = useTheme();
   //Closeing the history when clicking outside of it (mobile)
   const sidebarRef = useRef(null);
-  
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (isOpen && window.innerWidth < 768 && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -25,7 +24,6 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       document.removeEventListener('touchstart', handleOutsideClick);
     };
   }, [isOpen, toggleSidebar]);
-  
   const refreshHistory = async () => {
     //Run cleanup before fetching history
     await cleanupOldHistory();
@@ -36,25 +34,37 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
   useEffect(() => {
     if (isOpen) refreshHistory();
   }, [isOpen]);
-  
-  //Hamdle individual deletion
+  //Handle individual deletion
   const handleDelete = async (e, itemId) => {
     //Prevent triggering loadFromHistory
     e.stopPropagation();
-    
-    if (window.confirm('Are you sure you want to delete this history item?')) {
-      setIsDeleting(true);
-      try {
+    setIsDeleting(true);
+    try {
         await deleteHistoryItem(itemId);
         setHistoryItems(historyItems.filter(item => item.id !== itemId));
-      } catch (error) {
+    } catch (error) {
         alert('Failed to delete history item.');
+    } finally {
+        setIsDeleting(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (historyItems.length === 0) return;
+    
+    if (window.confirm('Are you sure you want to delete all history items? This cannot be undone.')) {
+      setIsDeleting(true);
+      try {
+        await clearAllHistory();
+        setHistoryItems([]);
+      } catch (error) {
+        alert('Failed to clear history.');
       } finally {
         setIsDeleting(false);
       }
     }
   };
-  
+
   const modules = [
     { id: 'converter', label: 'Code Converter', icon: 'fas fa-sync-alt' },
     { id: 'analysis', label: 'Code Analyzer', icon: 'fas fa-brain' },
@@ -64,7 +74,6 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
     { id: 'sql', label: 'SQL Builder', icon: 'fas fa-database' },
     { id: 'json', label: 'JSON Formatter', icon: 'fas fa-list-alt' },
   ];
-  
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`} ref={sidebarRef}>
       <div className="sidebar-header">
@@ -78,6 +87,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       </div>
 
       <nav className="nav-menu">
+ 
         <h3>Modules</h3>
         {modules.map(module => (
           <a
@@ -86,6 +96,7 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
             className={`nav-item ${activeModule === module.id ? 'active' : ''}`}
             onClick={() => setActiveModule(module.id)}
           >
+      
              <i className={module.icon}></i>
              {module.label}
           </a>
@@ -96,13 +107,15 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
         <h3>Theme:</h3>
         <select value={currentTheme} onChange={(e) => changeTheme(e.target.value)} className="theme-select-dropdown">
           {Object.entries(groupedThemes).map(([group, themes]) => (
-            <optgroup key={group} label={group}>
+        
+     <optgroup key={group} label={group}>
               {themes.map((theme) => (
                 <option key={theme.id} value={theme.id}>
                   {theme.label}
                 </option>
               ))}
-            </optgroup>
+            
+ </optgroup>
           ))}
         </select>
       </div>
@@ -110,26 +123,43 @@ export default function Sidebar({ activeModule, setActiveModule, isOpen, toggleS
       <div className="history-section">
         <div className="history-header">
           <h3>History:</h3>
-          <button className="refresh-btn" onClick={refreshHistory}>↻</button>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            {historyItems.length > 0 && (
+              <button 
+                className="refresh-btn" 
+                onClick={handleClearAll}
+                disabled={isDeleting}
+                title="Clear All History"
+                style={{ color: 'var(--danger)' }}
+              >
+                <i className="fas fa-trash"></i>
+              </button>
+            )}
+            <button className="refresh-btn" onClick={refreshHistory} title="Refresh History">↻</button>
+          </div>
         </div>
         <div className="history-list">
-          {historyItems.length === 0 ? (
+          {historyItems.length === 0 ?
+ (
             <p className="empty-state">No conversions yet.</p>
           ) : (
             historyItems.map(item => (
               <div key={item.id} className="history-card" onClick={() => loadFromHistory(item)}>
                 <div className="history-card-content">
-                  {/* Display language pair for generic converter */}
+                  {/* Display language pair for 
+ generic converter */}
                   <span className="history-type">
                     {item.type === 'converter' 
                       ? `${item.sourceLang?.toUpperCase()} to ${item.targetLang?.toUpperCase()}`
                       : item.type}
-                  </span>
+        
+                   </span>
                   <span className="history-date">{item.createdAt && item.createdAt.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <button className="delete-item-btn" onClick={(e) => handleDelete(e, item.id)} disabled={isDeleting}>
                   <i className="fas fa-trash"></i>
-                  </button>
+    
+               </button>
               </div>
             ))
           )}

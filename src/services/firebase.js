@@ -55,6 +55,28 @@ export const cleanupOldHistory = async () => {
   }
 };
 
+// Clear all history for the current user
+export const clearAllHistory = async () => {
+  if (!auth.currentUser) return;
+  try {
+    const q = query(collection(db, "users", auth.currentUser.uid, "history"));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    console.log(`Clear All: Deleted ${snapshot.size} history items.`);
+  } catch (error) {
+    console.error("Error clearing history:", error);
+    throw error;
+  }
+};
+
 //Delete individual items
 export const deleteHistoryItem = async (docId) => {
   if (!auth.currentUser) return;
