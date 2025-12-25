@@ -5,7 +5,7 @@ import './Modules.css';
 
 const LANGUAGES = [
   { value: 'javascript', label: 'JavaScript' },
-  { value: 'typescript', 'label': 'TypeScript' },
+  { value: 'typescript', label: 'TypeScript' },
   { value: 'python', label: 'Python' },
   { value: 'java', label: 'Java' },
   { value: 'c', label: 'C'},
@@ -16,6 +16,7 @@ const LANGUAGES = [
   { value: 'php', label: 'PHP' },
   { value: 'swift', label: 'Swift' },
 ];
+
 export default function CodeConverter({ onLoadData, onSwitchModule }) {
   const [sourceLang, setSourceLang] = useState('javascript');
   const [targetLang, setTargetLang] = useState('python');
@@ -26,11 +27,8 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
 
   useEffect(() => {
     if (onLoadData) {
-      // Restore history
       setInput(onLoadData.input || '');
       setOutputCode(onLoadData.fullOutput?.convertedCode || '');
-      
-      // Restore languages from history
       if (onLoadData.sourceLang) setSourceLang(onLoadData.sourceLang);
       if (onLoadData.targetLang) setTargetLang(onLoadData.targetLang);
     }
@@ -39,22 +37,19 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
   const handleSwap = () => {
     setSourceLang(targetLang);
     setTargetLang(sourceLang);
-    // Swap input and output content
     setInput(outputCode);
-    setOutputCode(''); // Clear output as it's now old
+    setOutputCode(''); 
   };
+
   const handleConvert = async () => {
     if (!input.trim()) return;
     setLoading(true);
     setOutputCode('');
 
     try {
-      // API call with the generic 'converter' type
       const result = await convertCode('converter', input, sourceLang, targetLang);
-
       if (result && result.convertedCode) {
         setOutputCode(result.convertedCode);
-        // Save history with language metadata
         await saveHistory('converter', input, result, sourceLang, targetLang);
       } else {
         throw new Error("Unexpected response structure.");
@@ -64,19 +59,12 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
     }
     setLoading(false);
   };
-  
-  const handleSendToAnalysis = () => {
-    if (outputCode) {
-        // Pass the output code as the input for the analysis module, and trigger the module switch
-        onSwitchModule('analysis', { input: outputCode, sourceModule: 'converter' });
-    }
-  };
 
   const handleCopy = () => {
     if (outputCode) {
-        navigator.clipboard.writeText(outputCode);
-        setCopyFeedback('Copied!');
-        setTimeout(() => setCopyFeedback('Copy'), 2000);
+      navigator.clipboard.writeText(outputCode);
+      setCopyFeedback('Copied!');
+      setTimeout(() => setCopyFeedback('Copy'), 2000);
     }
   };
 
@@ -84,83 +72,84 @@ export default function CodeConverter({ onLoadData, onSwitchModule }) {
     <div className="module-container">
       <header className="module-header">
         <h1>Universal Code Converter</h1>
-        <p>Translate code between {LANGUAGES.length} programming languages with language swapping.</p>
+        <p>Translate code between {LANGUAGES.length} programming languages.</p>
       </header>
 
       <div className="converter-grid">
         {/* Input Panel */}
-        <div className="panel">
-          <h3>Source Code: {LANGUAGES.find(l => l.value === sourceLang)?.label}</h3>
+        <div className="panel input-panel">
+          <h3>Source: {LANGUAGES.find(l => l.value === sourceLang)?.label}</h3>
           
-          {/* Controls: Select Language */}
-          <div className="action-row" style={{ marginBottom: '1.5rem', justifyContent: 'flex-start' }}>
+          <div className="action-row start" style={{ marginBottom: '1rem' }}>
             <select 
-                value={sourceLang} 
-                onChange={(e) => setSourceLang(e.target.value)}
-                className="lang-select"
+              value={sourceLang} 
+              onChange={(e) => setSourceLang(e.target.value)}
+              className="lang-select"
             >
-                {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+              {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
 
           <textarea 
             value={input} 
             onChange={(e) => setInput(e.target.value)} 
-            placeholder={`Paste your ${LANGUAGES.find(l => l.value === sourceLang)?.label || 'source'} code here...`} 
+            placeholder={`Paste your ${LANGUAGES.find(l => l.value === sourceLang)?.label} code here...`} 
             spellCheck="false"
+            className="flex-grow"
           />
 
-      
-          {/* Action Bar */}
           <div className="action-row">
-             <button className="primary-button" onClick={handleSwap}>
-                ⇄ Swap
-             </button>
-             <button className="primary-button" onClick={handleConvert} disabled={loading}>
+            <button className="primary-button secondary-action-btn" onClick={handleSwap}>
+              ⇄ Swap
+            </button>
+            <button className="primary-button action-btn" onClick={handleConvert} disabled={loading || !input.trim()}>
               {loading ? 'Converting...' : 'Convert Code'}
             </button>
           </div>
         </div>
 
         {/* Output Panel */}
-        <div className="panel">
-          <h3>Target Code: {LANGUAGES.find(l => l.value === targetLang)?.label}</h3>
+        <div className="panel output-panel">
+          <h3>Target: {LANGUAGES.find(l => l.value === targetLang)?.label}</h3>
           
-          {/* Controls: Select Language & Analysis Button */}
-          <div className="action-row" style={{ marginBottom: '1.5rem', justifyContent: 'space-between' }}>
+          <div className="action-row start" style={{ marginBottom: '1rem' }}>
             <select 
-                value={targetLang} 
-                onChange={(e) => setTargetLang(e.target.value)}
-                className="lang-select"
+              value={targetLang} 
+              onChange={(e) => setTargetLang(e.target.value)}
+              className="lang-select"
             >
-                {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+              {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
-            
-            {outputCode && (
-                <button className="primary-button" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={handleSendToAnalysis} title="Get detailed explanation">
-                    Code Analysis
-                </button>
-            )}
           </div>
 
           <div className="results-container">
-          
             {outputCode ? (
-                <div style={{ position: 'relative', flex: 1 }}> 
-                    <textarea 
-                        value={outputCode} 
-                        readOnly 
-                        style={{ height: '100%', paddingRight: '4rem' }} 
-                        spellCheck="false"
-                    />
-                    <button className="copy-btn" onClick={handleCopy} style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-                        {copyFeedback}
-                    </button>
+              <div className="code-output-container"> 
+                <div className="output-wrapper">
+                  <textarea 
+                    className="output-textarea"
+                    value={outputCode} 
+                    readOnly 
+                    spellCheck="false"
+                  />
+                  <button className="primary-button copy-btn copy-btn-absolute" onClick={handleCopy}>
+                    {copyFeedback}
+                  </button>
                 </div>
+                
+                <div className="action-row">
+                  <button 
+                    className="primary-button secondary-action-btn" 
+                    onClick={() => onSwitchModule('analysis', { input: outputCode, sourceModule: 'converter' })}
+                  >
+                    Analyze Result
+                  </button>
+                </div>
+              </div>
             ) : (
-                <div className="placeholder-text">
-                    {loading ? 'AI is processing...' : 'Your converted code will appear here.'}
-                </div>
+              <div className="placeholder-text">
+                {loading ? 'AI is processing...' : 'Result will appear here...'}
+              </div>
             )}
           </div>
         </div>
