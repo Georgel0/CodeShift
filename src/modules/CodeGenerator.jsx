@@ -21,6 +21,7 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
     if (!input.trim()) return;
     setLoading(true);
     setOutputCode('');
+
     try {
       const result = await convertCode('generator', input);
       if (result && result.convertedCode) {
@@ -46,6 +47,7 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
         {/* Input Panel */}
         <div className="panel input-panel">
           <h3>Description / Prompt</h3>
+      
           <textarea 
             value={input} 
             onChange={(e) => setInput(e.target.value)} 
@@ -53,6 +55,7 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
             spellCheck="false"
             className="flex-grow"
           />
+         
           <div className="action-row">
             <button 
                 className="primary-button action-btn" 
@@ -69,27 +72,29 @@ export default function CodeGenerator({ onLoadData, onSwitchModule }) {
           <h3>Generated Code</h3>
           <div className="results-container">
             {outputCode ? (
-              <div className="flex-grow" style={{ display: 'flex' }}> 
-                <div className="selector-card flex-grow" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
-                    <div className="tailwind-code flex-grow" style={{ alignItems: 'flex-start' }}>
-                        <pre className="code-pre">{outputCode}</pre>
-                    </div>
+              <div className="code-output-container"> 
+                  <textarea 
+                    className="output-textarea"
+                    value={outputCode}
+                    readOnly
+                    spellCheck="false"
+                  />
                     
-                    <div className="card-actions">
-                        <button 
-                            className="primary-button copy-btn" 
-                            onClick={() => navigator.clipboard.writeText(outputCode)}
-                        >
-                            Copy
-                        </button>
-                        <button 
-                            className="primary-button secondary-action-btn" 
-                            onClick={() => onSwitchModule('analysis', { input: outputCode, sourceModule: 'generator' })}
-                        >
-                            Analyze This
-                        </button>
-                    </div>
-                </div>
+                  <div className="action-row">
+                      <button 
+                          className="primary-button copy-btn" 
+                          onClick={() => navigator.clipboard.writeText(outputCode)}
+                          style={{ marginLeft: 0 }}
+                      >
+                          Copy
+                      </button>
+                      <button 
+                          className="primary-button secondary-action-btn" 
+                          onClick={() => onSwitchModule('analysis', { input: outputCode, sourceModule: 'generator' })}
+                      >
+                          Analyze This
+                      </button>
+                  </div>
               </div>
             ) : (
               <div className="placeholder-text">
