@@ -146,9 +146,9 @@ export default function CssFrameworkConverter({ onLoadData, preSetTarget = 'tail
                   </div>
               ) : (
                   // Single code block for Bootstrap, SASS, LESS
-                  <div className="code-output-container h-full flex flex-col">
+                  <div className="code-output-container">
                       <textarea 
-                        className="flex-grow font-mono text-sm p-3 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded border border-[var(--border)] resize-none focus:outline-none focus:border-[var(--accent)]"
+                        className="flex-grow output-textarea"
                         value={data.convertedCode || ''}
                         readOnly
                       />
